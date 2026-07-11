@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --midnight-navy: #0B1F3F;
+    --champagne-gold: #C69B3C;
+    --warm-ivory: #F5F0E8;
+    --pure-white: #FFFFFF;
+    --charcoal: #1E1E1E;
+    --slate-gray: #6B7280;
+    --light-gray: #E5E7EB;
+    --muted-cream: #EDE8DD;
+    --bali-teal: #1A6B5E;
+    --coral-rose: #D4796B;
+    --deep-ocean: #0F2D4A;
+    --status-pending: #C69B3C;
+    --status-confirmed: #1A6B5E;
+    --status-cancelled: #D4796B;
+    --status-completed: #0B1F3F;
+
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.625rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: var(--charcoal);
+    background-color: var(--pure-white);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    color: var(--midnight-navy);
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+
+  .font-body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+
+  .font-mono-stat {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .gold-shimmer {
+    background: linear-gradient(135deg, #C69B3C 0%, #E8C874 50%, #C69B3C 100%);
+  }
+
+  .hero-overlay {
+    background: linear-gradient(180deg, rgba(11,31,63,0.7) 0%, rgba(11,31,63,0.3) 50%, rgba(11,31,63,0.85) 100%);
+  }
+
+  .dark-gradient {
+    background: linear-gradient(180deg, #0B1F3F 0%, #0F2D4A 100%);
+  }
+
+  .ivory-gradient {
+    background: linear-gradient(180deg, #F5F0E8 0%, #EDE8DD 100%);
+  }
+
+  .container-inkedup {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: clamp(24px, 5vw, 80px);
+    padding-right: clamp(24px, 5vw, 80px);
+  }
+
+  .section-padding {
+    padding-top: clamp(80px, 10vw, 140px);
+    padding-bottom: clamp(80px, 10vw, 140px);
+  }
+
+  .text-hero-display {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(48px, 6vw, 96px);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  .text-section-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(36px, 4vw, 64px);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  .text-card-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(24px, 2.5vw, 32px);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .text-stat-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(32px, 4vw, 56px);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Page hero — slow, subtle background drift ("slide") that keeps focus on the content */
+@keyframes hero-drift {
+  0% {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.13) translate3d(-2%, -1.5%, 0);
+  }
+  100% {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+}
+
+.hero-drift {
+  animation: hero-drift 24s ease-in-out infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-drift {
+    animation: none;
+    transform: scale(1.06);
+  }
+}
+
+/* Accessible, consistent keyboard focus ring across the whole site */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  :focus-visible {
+    outline: 3px solid rgba(198, 155, 60, 0.9);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
