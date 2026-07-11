@@ -30,7 +30,6 @@ const AdminArtists = lazy(() => import('@/pages/AdminArtists'));
 const AdminBookings = lazy(() => import('@/pages/AdminBookings'));
 const AdminCommissions = lazy(() => import('@/pages/AdminCommissions'));
 const AdminApplications = lazy(() => import('@/pages/AdminApplications'));
-const PriceCalculator = lazy(() => import('@/pages/PriceCalculator'));
 const AdminPricing = lazy(() => import('@/pages/AdminPricing'));
 
 function RouteFallback() {
@@ -58,7 +57,7 @@ export default function App() {
           <Route path="/locations/:slug" element={<LocationPage />} />
           <Route path="/safety" element={<Safety />} />
           <Route path="/pricing" element={<Pricing />} />
-          <Route path="/price-calculator" element={<PriceCalculator />} />
+          <Route path="/price-calculator" element={<Navigate to="/pricing" replace />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/contact" element={<Contact />} />
