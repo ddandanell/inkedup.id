@@ -7,6 +7,7 @@ import {
   Building2,
   Calendar,
   DollarSign,
+  Calculator,
   BarChart3,
   TrendingUp,
   Settings,
@@ -23,6 +24,7 @@ const mainNavItems = [
   { icon: Users, label: 'Artists', href: '/admin/artists' },
   { icon: Calendar, label: 'Bookings', href: '/admin/bookings', badge: 'newBookings' },
   { icon: DollarSign, label: 'Commissions', href: '/admin/commissions' },
+  { icon: Calculator, label: 'Pricing', href: '/admin/pricing' },
 ];
 
 const analyticsNavItems = [

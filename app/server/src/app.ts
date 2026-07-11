@@ -16,6 +16,8 @@ import locationsRoutes from './routes/locations.js';
 import contentRoutes from './routes/content.js';
 import dashboardRoutes from './routes/dashboard.js';
 import statsRoutes from './routes/stats.js';
+import pricingRoutes from './routes/pricing.js';
+import adminPricingRoutes from './routes/adminPricing.js';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
@@ -66,6 +68,8 @@ app.use('/api/locations', locationsRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/pricing', pricingRoutes);
+app.use('/api/admin/pricing', adminPricingRoutes);
 
 app.use(errorHandler);
 

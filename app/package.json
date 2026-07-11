@@ -8,6 +8,7 @@
     "server": "tsx watch server/src/index.ts",
     "server:once": "tsx server/src/index.ts",
     "seed": "tsx server/src/seed.ts",
+    "seed:pricing": "tsx server/src/seed-pricing.ts",
     "db:reset": "rm -f server/data/inkedup.db && npm run seed",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

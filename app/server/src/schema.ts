@@ -195,6 +195,18 @@ export const SCHEMA_STATEMENTS: string[] = [
     updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP::text)
   )`,
 
+  `CREATE TABLE IF NOT EXISTS pricing_versions (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    status TEXT NOT NULL CHECK(status IN ('draft', 'published', 'archived')) DEFAULT 'draft',
+    config TEXT NOT NULL DEFAULT '{}',
+    created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP::text),
+    updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP::text),
+    published_at TEXT
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_pricing_versions_status ON pricing_versions(status)`,
+
   `CREATE INDEX IF NOT EXISTS idx_artists_status ON artists(status)`,
   `CREATE INDEX IF NOT EXISTS idx_artists_studio ON artists(studio_id)`,
   `CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status)`,
@@ -205,6 +217,7 @@ export const SCHEMA_STATEMENTS: string[] = [
 
 // Tables in dependency-reverse order so a reset can drop cleanly.
 export const ALL_TABLES: string[] = [
+  'pricing_versions',
   'commissions',
   'reviews',
   'content_pages',

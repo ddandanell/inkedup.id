@@ -13,6 +13,7 @@ const navLinks = [
   { label: 'Locations', href: '/locations' },
   { label: 'How It Works', href: '/how-it-works' },
   { label: 'Pricing', href: '/pricing' },
+  { label: 'Price Calculator', href: '/price-calculator' },
   { label: 'Safety', href: '/safety' },
   { label: 'Apply as Studio', href: '/studio/apply' },
 ];
