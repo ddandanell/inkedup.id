@@ -21,6 +21,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [discoverOpen, setDiscoverOpen] = useState(false);
+  const [mobileDiscoverOpen, setMobileDiscoverOpen] = useState(false);
   const location = useLocation();
   const mobilePanelRef = useRef<HTMLDivElement>(null);
   const discoverRef = useRef<HTMLDivElement>(null);
@@ -70,6 +71,7 @@ export default function Navbar() {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      setMobileDiscoverOpen(false);
     }
     return () => { document.body.style.overflow = ''; };
   }, [mobileOpen]);
@@ -224,9 +226,43 @@ export default function Navbar() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               >
-                <span className="font-display text-3xl text-pure-white/40">Discover</span>
+                <button
+                  type="button"
+                  onClick={() => setMobileDiscoverOpen((o) => !o)}
+                  aria-expanded={mobileDiscoverOpen}
+                  aria-controls="mobile-discover-menu"
+                  className="flex items-center gap-2 font-display text-3xl text-pure-white hover:text-champagne-gold transition-colors"
+                >
+                  Discover
+                  <ChevronDown
+                    size={22}
+                    className={`transition-transform duration-200 ${mobileDiscoverOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
               </motion.div>
-              {discoverLinks.map((link, i) => (
+              <AnimatePresence initial={false}>
+                {mobileDiscoverOpen && (
+                  <motion.div
+                    id="mobile-discover-menu"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex flex-col items-start gap-4 pl-6 overflow-hidden"
+                  >
+                    {discoverLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        to={link.href}
+                        className="font-display text-2xl text-pure-white/70 hover:text-champagne-gold transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              {navLinks.map((link, i) => (
                 <motion.div
                   key={link.href}
                   initial={{ opacity: 0, x: -20 }}
@@ -241,25 +277,10 @@ export default function Navbar() {
                   </Link>
                 </motion.div>
               ))}
-              {navLinks.map((link, i) => (
-                <motion.div
-                  key={link.href}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: (discoverLinks.length + i + 1) * 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <Link
-                    to={link.href}
-                    className="font-display text-3xl text-pure-white hover:text-champagne-gold transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </motion.div>
-              ))}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: (discoverLinks.length + navLinks.length + 1) * 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ delay: (navLinks.length + 1) * 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="mt-4"
               >
                 <Link
