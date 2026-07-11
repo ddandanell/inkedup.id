@@ -352,11 +352,8 @@ export default function Booking() {
       {/* ── Simplified header ── */}
       <div className="bg-pure-white border-b border-light-gray h-16 flex items-center sticky top-0 z-[100]">
         <div className="container-inkedup max-w-[1100px] w-full flex items-center justify-between px-4 md:px-6">
-          <Link to="/" className="font-display text-xl font-semibold tracking-[0.08em] text-midnight-navy">
-            INKEDUP
-          </Link>
-          <span className="font-body text-sm font-medium text-slate-gray hidden sm:block">
-            Book a Session
+          <span className="font-body text-sm font-medium text-slate-gray">
+            Book a Session{artist ? ` · ${artist.displayName}` : ''}
           </span>
           <Link
             to={artist ? `/artists/${artist.slug}` : '/artists'}

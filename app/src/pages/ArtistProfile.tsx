@@ -62,8 +62,8 @@ function MiniCalendar() {
         </span>
       </div>
       <div className="grid grid-cols-7 gap-1">
-        {days.map((d) => (
-          <div key={d} className="text-center font-body text-[11px] font-semibold text-slate-gray uppercase py-1">
+        {days.map((d, i) => (
+          <div key={`${d}-${i}`} className="text-center font-body text-[11px] font-semibold text-slate-gray uppercase py-1">
             {d}
           </div>
         ))}
@@ -293,11 +293,11 @@ export default function ArtistProfile() {
             {/* Row 2: Stats */}
             <div className="grid grid-cols-4 mt-6 pt-6 border-t border-light-gray">
               {stats.map((s, i) => (
-                <div key={s.label} className={`text-center ${i > 0 ? 'border-l border-light-gray' : ''}`}>
-                  <div className="font-mono text-xl font-medium text-midnight-navy">
+                <div key={s.label} className={`min-w-0 px-1 text-center ${i > 0 ? 'border-l border-light-gray' : ''}`}>
+                  <div className="font-mono text-[15px] md:text-xl font-medium text-midnight-navy whitespace-nowrap">
                     {s.value}
                   </div>
-                  <div className="font-body text-xs text-slate-gray uppercase mt-0.5">{s.label}</div>
+                  <div className="font-body text-[10px] md:text-xs text-slate-gray uppercase mt-0.5">{s.label}</div>
                 </div>
               ))}
             </div>
