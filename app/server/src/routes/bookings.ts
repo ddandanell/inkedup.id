@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { db } from '../db.js';
+import { query } from '../db.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { generateId, generateReference } from '../utils/id.js';
 import { parseJson } from '../utils/dbHelpers.js';
@@ -25,29 +25,30 @@ function rowToBooking(row: Record<string, unknown>): Booking {
     placement: row.placement as string | undefined,
     preferred_date: row.preferred_date as string | undefined,
     description: row.description as string | undefined,
-    budget: row.budget as number | undefined,
+    budget: row.budget == null ? undefined : Number(row.budget),
     reference_images: parseJson<string[]>(row.reference_images, []),
     status: row.status as Booking['status'],
-    deposit_amount: row.deposit_amount as number | undefined,
-    total_price: row.total_price as number | undefined,
+    deposit_amount: row.deposit_amount == null ? undefined : Number(row.deposit_amount),
+    total_price: row.total_price == null ? undefined : Number(row.total_price),
     notes: (row.notes as string) || '',
     created_at: row.created_at as string,
     updated_at: row.updated_at as string,
   };
 }
 
-router.get('/', authMiddleware, requireRole('admin'), (_req, res, next) => {
+router.get('/', authMiddleware, requireRole('admin'), async (_req, res, next) => {
   try {
-    const rows = db.prepare('SELECT * FROM bookings ORDER BY created_at DESC').all() as Record<string, unknown>[];
+    const { rows } = await query('SELECT * FROM bookings ORDER BY created_at DESC');
     res.json(rows.map(rowToBooking));
   } catch (err) {
     next(err);
   }
 });
 
-router.get('/:id', authMiddleware, requireRole('admin'), (req, res, next) => {
+router.get('/:id', authMiddleware, requireRole('admin'), async (req: AuthRequest, res, next) => {
   try {
-    const row = db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id) as Record<string, unknown> | undefined;
+    const { rows } = await query('SELECT * FROM bookings WHERE id = $1', [req.params.id]);
+    const row = rows[0];
     if (!row) {
       res.status(404).json({ error: 'Booking not found' });
       return;
@@ -58,97 +59,98 @@ router.get('/:id', authMiddleware, requireRole('admin'), (req, res, next) => {
   }
 });
 
-router.post('/', (req, res, next) => {
+router.post('/', async (req, res, next) => {
   try {
     const body = req.body as Partial<Booking>;
     const id = generateId('booking');
     const reference = generateReference();
-    db.prepare(
+    await query(
       `INSERT INTO bookings (
         id, reference, artist_id, artist_name, customer_id, customer_name, customer_email, customer_whatsapp,
         customer_location, service_type, tattoo_style, size, placement, preferred_date, description,
         budget, reference_images, status, deposit_amount, total_price, notes
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(
-      id,
-      reference,
-      body.artist_id || null,
-      body.artist_name || null,
-      body.customer_id || null,
-      body.customer_name || '',
-      body.customer_email || '',
-      body.customer_whatsapp || '',
-      body.customer_location || '',
-      body.service_type || null,
-      body.tattoo_style || null,
-      body.size || null,
-      body.placement || null,
-      body.preferred_date || null,
-      body.description || null,
-      body.budget || null,
-      JSON.stringify(body.reference_images || []),
-      'new',
-      body.deposit_amount || null,
-      body.total_price || null,
-      body.notes || ''
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`,
+      [
+        id,
+        reference,
+        body.artist_id || null,
+        body.artist_name || null,
+        body.customer_id || null,
+        body.customer_name || '',
+        body.customer_email || '',
+        body.customer_whatsapp || '',
+        body.customer_location || '',
+        body.service_type || null,
+        body.tattoo_style || null,
+        body.size || null,
+        body.placement || null,
+        body.preferred_date || null,
+        body.description || null,
+        body.budget || null,
+        JSON.stringify(body.reference_images || []),
+        'new',
+        body.deposit_amount || null,
+        body.total_price || null,
+        body.notes || '',
+      ]
     );
-    const row = db.prepare('SELECT * FROM bookings WHERE id = ?').get(id) as Record<string, unknown>;
-    res.status(201).json(rowToBooking(row));
+    const { rows } = await query('SELECT * FROM bookings WHERE id = $1', [id]);
+    res.status(201).json(rowToBooking(rows[0]));
   } catch (err) {
     next(err);
   }
 });
 
-router.patch('/:id', authMiddleware, requireRole('admin'), (req: AuthRequest, res, next) => {
+router.patch('/:id', authMiddleware, requireRole('admin'), async (req: AuthRequest, res, next) => {
   try {
-    const existing = db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id) as Record<string, unknown> | undefined;
+    const { rows: existingRows } = await query('SELECT * FROM bookings WHERE id = $1', [req.params.id]);
+    const existing = existingRows[0];
     if (!existing) {
       res.status(404).json({ error: 'Booking not found' });
       return;
     }
     const body = req.body as Partial<Booking>;
-    const fields: string[] = [];
+    const setClauses: string[] = [];
     const values: unknown[] = [];
+    let i = 1;
     for (const [key, value] of Object.entries(body)) {
       if (value === undefined) continue;
-      if (key === 'reference_images') {
-        fields.push('reference_images = ?');
-        values.push(JSON.stringify(value));
-      } else {
-        fields.push(`${key} = ?`);
-        values.push(value);
-      }
+      setClauses.push(`${key} = $${i++}`);
+      values.push(key === 'reference_images' ? JSON.stringify(value) : value);
     }
-    if (fields.length === 0) {
+    if (setClauses.length === 0) {
       res.json(rowToBooking(existing));
       return;
     }
     values.push(req.params.id);
-    db.prepare(`UPDATE bookings SET ${fields.join(', ')}, updated_at = datetime('now') WHERE id = ?`).run(...values);
-    const row = db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id) as Record<string, unknown>;
-    res.json(rowToBooking(row));
+    await query(
+      `UPDATE bookings SET ${setClauses.join(', ')}, updated_at = CURRENT_TIMESTAMP::text WHERE id = $${i}`,
+      values
+    );
+    const { rows } = await query('SELECT * FROM bookings WHERE id = $1', [req.params.id]);
+    res.json(rowToBooking(rows[0]));
   } catch (err) {
     next(err);
   }
 });
 
-router.post('/:id/assign-artist', authMiddleware, requireRole('admin'), (req: AuthRequest, res, next) => {
+router.post('/:id/assign-artist', authMiddleware, requireRole('admin'), async (req: AuthRequest, res, next) => {
   try {
     const { artist_id, artist_name } = req.body;
-    db.prepare('UPDATE bookings SET artist_id = ?, artist_name = ?, status = ? WHERE id = ?').run(
+    await query('UPDATE bookings SET artist_id = $1, artist_name = $2, status = $3 WHERE id = $4', [
       artist_id || null,
       artist_name || null,
       'matched',
-      req.params.id
-    );
-    const row = db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id) as Record<string, unknown>;
-    res.json(rowToBooking(row));
+      req.params.id,
+    ]);
+    const { rows } = await query('SELECT * FROM bookings WHERE id = $1', [req.params.id]);
+    res.json(rowToBooking(rows[0]));
   } catch (err) {
     next(err);
   }
 });
 
-router.post('/:id/status', authMiddleware, requireRole('admin'), (req: AuthRequest, res, next) => {
+router.post('/:id/status', authMiddleware, requireRole('admin'), async (req: AuthRequest, res, next) => {
   try {
     const { status, notes } = req.body as { status: Booking['status']; notes?: string };
     const validStatuses = ['new', 'reviewed', 'matched', 'deposit_paid', 'confirmed', 'completed', 'cancelled'];
@@ -156,37 +158,39 @@ router.post('/:id/status', authMiddleware, requireRole('admin'), (req: AuthReque
       res.status(400).json({ error: 'Invalid status' });
       return;
     }
-    db.prepare('UPDATE bookings SET status = ?, notes = coalesce(?, notes), updated_at = datetime(\'now\') WHERE id = ?').run(
-      status,
-      notes || null,
-      req.params.id
+    await query(
+      'UPDATE bookings SET status = $1, notes = COALESCE($2, notes), updated_at = CURRENT_TIMESTAMP::text WHERE id = $3',
+      [status, notes || null, req.params.id]
     );
     if (status === 'deposit_paid' || status === 'confirmed' || status === 'completed') {
-      const booking = rowToBooking(db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id) as Record<string, unknown>);
+      const { rows: bRows } = await query('SELECT * FROM bookings WHERE id = $1', [req.params.id]);
+      const booking = rowToBooking(bRows[0]);
       const total = booking.total_price || booking.budget || 0;
       const rate = 0.10;
       const commissionAmount = Math.round(total * rate);
-      const existingCommission = db.prepare('SELECT id FROM commissions WHERE booking_id = ?').get(booking.id);
-      if (!existingCommission && commissionAmount > 0) {
-        db.prepare('INSERT INTO commissions (id, booking_id, amount, rate, status) VALUES (?, ?, ?, ?, ?)').run(
+      const { rows: existingCommission } = await query('SELECT id FROM commissions WHERE booking_id = $1', [
+        booking.id,
+      ]);
+      if (existingCommission.length === 0 && commissionAmount > 0) {
+        await query('INSERT INTO commissions (id, booking_id, amount, rate, status) VALUES ($1, $2, $3, $4, $5)', [
           generateId('commission'),
           booking.id,
           commissionAmount,
           rate,
-          status === 'completed' ? 'paid' : 'pending'
-        );
+          status === 'completed' ? 'paid' : 'pending',
+        ]);
       }
     }
-    const row = db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id) as Record<string, unknown>;
-    res.json(rowToBooking(row));
+    const { rows } = await query('SELECT * FROM bookings WHERE id = $1', [req.params.id]);
+    res.json(rowToBooking(rows[0]));
   } catch (err) {
     next(err);
   }
 });
 
-router.delete('/:id', authMiddleware, requireRole('admin'), (req: AuthRequest, res, next) => {
+router.delete('/:id', authMiddleware, requireRole('admin'), async (req: AuthRequest, res, next) => {
   try {
-    db.prepare('DELETE FROM bookings WHERE id = ?').run(req.params.id);
+    await query('DELETE FROM bookings WHERE id = $1', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     next(err);

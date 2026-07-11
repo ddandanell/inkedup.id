@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { db } from '../db.js';
+import { query } from '../db.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { generateId } from '../utils/id.js';
 import { parseJson } from '../utils/dbHelpers.js';
@@ -28,27 +28,28 @@ function rowToStudio(row: Record<string, unknown>): Studio {
 }
 
 // Unfiltered list (all statuses) is admin-only. Public pages use GET /active.
-router.get('/', authMiddleware, requireRole('admin'), (_req, res, next) => {
+router.get('/', authMiddleware, requireRole('admin'), async (_req, res, next) => {
   try {
-    const rows = db.prepare('SELECT * FROM studios ORDER BY name').all() as Record<string, unknown>[];
+    const { rows } = await query('SELECT * FROM studios ORDER BY name');
     res.json(rows.map(rowToStudio));
   } catch (err) {
     next(err);
   }
 });
 
-router.get('/active', (_req, res, next) => {
+router.get('/active', async (_req, res, next) => {
   try {
-    const rows = db.prepare("SELECT * FROM studios WHERE status = 'active' ORDER BY name").all() as Record<string, unknown>[];
+    const { rows } = await query("SELECT * FROM studios WHERE status = 'active' ORDER BY name");
     res.json(rows.map(rowToStudio));
   } catch (err) {
     next(err);
   }
 });
 
-router.get('/:id', (req, res, next) => {
+router.get('/:id', async (req, res, next) => {
   try {
-    const row = db.prepare('SELECT * FROM studios WHERE id = ?').get(req.params.id) as Record<string, unknown> | undefined;
+    const { rows } = await query('SELECT * FROM studios WHERE id = $1', [req.params.id]);
+    const row = rows[0];
     if (!row) {
       res.status(404).json({ error: 'Studio not found' });
       return;
@@ -59,77 +60,78 @@ router.get('/:id', (req, res, next) => {
   }
 });
 
-router.get('/:id/artists', (req, res, next) => {
+router.get('/:id/artists', async (req, res, next) => {
   try {
-    const rows = db.prepare('SELECT * FROM artists WHERE studio_id = ?').all(req.params.id) as Record<string, unknown>[];
+    const { rows } = await query('SELECT * FROM artists WHERE studio_id = $1', [req.params.id]);
     res.json(rows);
   } catch (err) {
     next(err);
   }
 });
 
-router.post('/', authMiddleware, requireRole('admin'), (req: AuthRequest, res, next) => {
+router.post('/', authMiddleware, requireRole('admin'), async (req: AuthRequest, res, next) => {
   try {
     const body = req.body as Partial<Studio>;
     const id = generateId('studio');
-    db.prepare(
-      'INSERT INTO studios (id, name, email, whatsapp_number, location, address, status, artist_ids, instagram, bio, logo_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-    ).run(
-      id,
-      body.name || '',
-      body.email || '',
-      body.whatsapp_number || '',
-      body.location || '',
-      body.address || null,
-      body.status || 'pending',
-      JSON.stringify(body.artist_ids || []),
-      body.instagram || null,
-      body.bio || null,
-      body.logo_url || null
+    await query(
+      'INSERT INTO studios (id, name, email, whatsapp_number, location, address, status, artist_ids, instagram, bio, logo_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
+      [
+        id,
+        body.name || '',
+        body.email || '',
+        body.whatsapp_number || '',
+        body.location || '',
+        body.address || null,
+        body.status || 'pending',
+        JSON.stringify(body.artist_ids || []),
+        body.instagram || null,
+        body.bio || null,
+        body.logo_url || null,
+      ]
     );
-    const row = db.prepare('SELECT * FROM studios WHERE id = ?').get(id) as Record<string, unknown>;
-    res.status(201).json(rowToStudio(row));
+    const { rows } = await query('SELECT * FROM studios WHERE id = $1', [id]);
+    res.status(201).json(rowToStudio(rows[0]));
   } catch (err) {
     next(err);
   }
 });
 
-router.patch('/:id', authMiddleware, requireRole('admin'), (req: AuthRequest, res, next) => {
+router.patch('/:id', authMiddleware, requireRole('admin'), async (req: AuthRequest, res, next) => {
   try {
-    const existing = db.prepare('SELECT * FROM studios WHERE id = ?').get(req.params.id) as Record<string, unknown> | undefined;
+    const { rows: existingRows } = await query('SELECT * FROM studios WHERE id = $1', [req.params.id]);
+    const existing = existingRows[0];
     if (!existing) {
       res.status(404).json({ error: 'Studio not found' });
       return;
     }
     const body = req.body as Partial<Studio>;
-    const fields: string[] = [];
+    const setClauses: string[] = [];
     const values: unknown[] = [];
+    let i = 1;
     for (const [key, value] of Object.entries(body)) {
       if (value === undefined) continue;
-      if (key === 'artist_ids') {
-        fields.push('artist_ids = ?');
-        values.push(JSON.stringify(value));
-      } else {
-        fields.push(`${key} = ?`);
-        values.push(value);
-      }
+      setClauses.push(`${key} = $${i++}`);
+      values.push(key === 'artist_ids' ? JSON.stringify(value) : value);
     }
-    if (fields.length === 0) {
+    if (setClauses.length === 0) {
       res.json(rowToStudio(existing));
       return;
     }
     values.push(req.params.id);
-    db.prepare(`UPDATE studios SET ${fields.join(', ')}, updated_at = datetime('now') WHERE id = ?`).run(...values);
-    const row = db.prepare('SELECT * FROM studios WHERE id = ?').get(req.params.id) as Record<string, unknown>;
-    res.json(rowToStudio(row));
+    await query(
+      `UPDATE studios SET ${setClauses.join(', ')}, updated_at = CURRENT_TIMESTAMP::text WHERE id = $${i}`,
+      values
+    );
+    const { rows } = await query('SELECT * FROM studios WHERE id = $1', [req.params.id]);
+    res.json(rowToStudio(rows[0]));
   } catch (err) {
     next(err);
   }
 });
 
-router.delete('/:id', authMiddleware, requireRole('admin'), (req: AuthRequest, res, next) => {
+router.delete('/:id', authMiddleware, requireRole('admin'), async (req: AuthRequest, res, next) => {
   try {
-    db.prepare('DELETE FROM studios WHERE id = ?').run(req.params.id);
+    await query('DELETE FROM studios WHERE id = $1', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     next(err);

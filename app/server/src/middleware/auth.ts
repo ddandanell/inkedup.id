@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { db } from '../db.js';
+import { query } from '../db.js';
 import type { User } from '../types.js';
 
 const JWT_SECRET = (() => {
@@ -31,7 +31,11 @@ export function verifyToken(token: string): { id: string; role: string; email: s
   return jwt.verify(token, JWT_SECRET) as { id: string; role: string; email: string; name: string };
 }
 
-export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
+export async function authMiddleware(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -39,15 +43,20 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
   }
   try {
     const decoded = verifyToken(header.slice(7));
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(decoded.id) as User | undefined;
+    const { rows } = await query<User>('SELECT * FROM users WHERE id = $1', [decoded.id]);
+    const user = rows[0];
     if (!user) {
       res.status(401).json({ error: 'User not found' });
       return;
     }
     req.user = user;
     next();
-  } catch {
-    res.status(401).json({ error: 'Invalid token' });
+  } catch (err) {
+    if (err instanceof jwt.JsonWebTokenError) {
+      res.status(401).json({ error: 'Invalid token' });
+      return;
+    }
+    next(err);
   }
 }
 

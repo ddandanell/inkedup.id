@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { db } from '../db.js';
+import { query } from '../db.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { generateId } from '../utils/id.js';
 import type { AuthRequest } from '../middleware/auth.js';
@@ -12,28 +12,29 @@ function rowToLocation(row: Record<string, unknown>): Location {
     id: row.id as string,
     name: row.name as string,
     slug: row.slug as string,
-    zone: (row.zone as number) ?? 1,
-    call_out_fee: (row.call_out_fee as number) ?? 0,
-    latitude: row.latitude as number | undefined,
-    longitude: row.longitude as number | undefined,
+    zone: Number(row.zone) || 1,
+    call_out_fee: Number(row.call_out_fee) || 0,
+    latitude: row.latitude == null ? undefined : Number(row.latitude),
+    longitude: row.longitude == null ? undefined : Number(row.longitude),
     description: row.description as string | undefined,
-    priority: (row.priority as number) ?? 0,
-    published: (row.published as number) ?? 1,
+    priority: Number(row.priority) || 0,
+    published: Number(row.published) || 0,
   };
 }
 
-router.get('/', (_req, res, next) => {
+router.get('/', async (_req, res, next) => {
   try {
-    const rows = db.prepare('SELECT * FROM locations WHERE published = 1 ORDER BY priority DESC, name').all() as Record<string, unknown>[];
+    const { rows } = await query('SELECT * FROM locations WHERE published = 1 ORDER BY priority DESC, name');
     res.json(rows.map(rowToLocation));
   } catch (err) {
     next(err);
   }
 });
 
-router.get('/:slug', (req, res, next) => {
+router.get('/:slug', async (req, res, next) => {
   try {
-    const row = db.prepare('SELECT * FROM locations WHERE slug = ?').get(req.params.slug) as Record<string, unknown> | undefined;
+    const { rows } = await query('SELECT * FROM locations WHERE slug = $1', [req.params.slug]);
+    const row = rows[0];
     if (!row) {
       res.status(404).json({ error: 'Location not found' });
       return;
@@ -44,54 +45,57 @@ router.get('/:slug', (req, res, next) => {
   }
 });
 
-router.post('/', authMiddleware, requireRole('admin'), (req: AuthRequest, res, next) => {
+router.post('/', authMiddleware, requireRole('admin'), async (req: AuthRequest, res, next) => {
   try {
     const body = req.body as Partial<Location>;
     const id = generateId('loc');
-    db.prepare(
-      'INSERT INTO locations (id, name, slug, zone, call_out_fee, latitude, longitude, description, priority, published) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-    ).run(
-      id,
-      body.name || '',
-      body.slug || '',
-      body.zone || 1,
-      body.call_out_fee ?? 0,
-      body.latitude || null,
-      body.longitude || null,
-      body.description || null,
-      body.priority || 0,
-      body.published ?? 1
+    await query(
+      'INSERT INTO locations (id, name, slug, zone, call_out_fee, latitude, longitude, description, priority, published) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
+      [
+        id,
+        body.name || '',
+        body.slug || '',
+        body.zone || 1,
+        body.call_out_fee ?? 0,
+        body.latitude || null,
+        body.longitude || null,
+        body.description || null,
+        body.priority || 0,
+        body.published ?? 1,
+      ]
     );
-    const row = db.prepare('SELECT * FROM locations WHERE id = ?').get(id) as Record<string, unknown>;
-    res.status(201).json(rowToLocation(row));
+    const { rows } = await query('SELECT * FROM locations WHERE id = $1', [id]);
+    res.status(201).json(rowToLocation(rows[0]));
   } catch (err) {
     next(err);
   }
 });
 
-router.patch('/:id', authMiddleware, requireRole('admin'), (req: AuthRequest, res, next) => {
+router.patch('/:id', authMiddleware, requireRole('admin'), async (req: AuthRequest, res, next) => {
   try {
-    const existing = db.prepare('SELECT * FROM locations WHERE id = ?').get(req.params.id) as Record<string, unknown> | undefined;
+    const { rows: existingRows } = await query('SELECT * FROM locations WHERE id = $1', [req.params.id]);
+    const existing = existingRows[0];
     if (!existing) {
       res.status(404).json({ error: 'Location not found' });
       return;
     }
     const body = req.body as Partial<Location>;
-    const fields: string[] = [];
+    const setClauses: string[] = [];
     const values: unknown[] = [];
+    let i = 1;
     for (const [key, value] of Object.entries(body)) {
       if (value === undefined) continue;
-      fields.push(`${key} = ?`);
+      setClauses.push(`${key} = $${i++}`);
       values.push(value);
     }
-    if (fields.length === 0) {
+    if (setClauses.length === 0) {
       res.json(rowToLocation(existing));
       return;
     }
     values.push(req.params.id);
-    db.prepare(`UPDATE locations SET ${fields.join(', ')} WHERE id = ?`).run(...values);
-    const row = db.prepare('SELECT * FROM locations WHERE id = ?').get(req.params.id) as Record<string, unknown>;
-    res.json(rowToLocation(row));
+    await query(`UPDATE locations SET ${setClauses.join(', ')} WHERE id = $${i}`, values);
+    const { rows } = await query('SELECT * FROM locations WHERE id = $1', [req.params.id]);
+    res.json(rowToLocation(rows[0]));
   } catch (err) {
     next(err);
   }

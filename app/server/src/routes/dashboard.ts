@@ -1,20 +1,29 @@
 import { Router } from 'express';
-import { db } from '../db.js';
+import { query } from '../db.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
-import type { AuthRequest } from '../middleware/auth.js';
 import type { DashboardStats } from '../types.js';
 
 const router = Router();
 
-router.get('/', authMiddleware, requireRole('admin'), (_req, res, next) => {
+async function count(sql: string, params: unknown[] = []): Promise<number> {
+  const { rows } = await query<{ c: number | string }>(sql, params);
+  return Number(rows[0]?.c) || 0;
+}
+
+router.get('/', authMiddleware, requireRole('admin'), async (_req, res, next) => {
   try {
-    const totalArtists = (db.prepare("SELECT COUNT(*) as c FROM artists WHERE status = 'active'").get() as { c: number }).c;
-    const totalBookings = (db.prepare('SELECT COUNT(*) as c FROM bookings').get() as { c: number }).c;
-    const pendingBookings = (db.prepare("SELECT COUNT(*) as c FROM bookings WHERE status IN ('new', 'reviewed', 'matched')").get() as { c: number }).c;
-    const confirmedBookings = (db.prepare("SELECT COUNT(*) as c FROM bookings WHERE status IN ('confirmed', 'deposit_paid')").get() as { c: number }).c;
-    const completedBookings = (db.prepare("SELECT COUNT(*) as c FROM bookings WHERE status = 'completed'").get() as { c: number }).c;
-    const pendingStudioApplications = (db.prepare("SELECT COUNT(*) as c FROM applications WHERE status = 'pending'").get() as { c: number }).c;
-    const totalCommissions = (db.prepare('SELECT COALESCE(SUM(amount), 0) as s FROM commissions').get() as { s: number }).s;
+    const [totalArtists, totalBookings, pendingBookings, confirmedBookings, completedBookings, pendingStudioApplications, commissionsRow] =
+      await Promise.all([
+        count("SELECT COUNT(*)::int AS c FROM artists WHERE status = 'active'"),
+        count('SELECT COUNT(*)::int AS c FROM bookings'),
+        count("SELECT COUNT(*)::int AS c FROM bookings WHERE status IN ('new', 'reviewed', 'matched')"),
+        count("SELECT COUNT(*)::int AS c FROM bookings WHERE status IN ('confirmed', 'deposit_paid')"),
+        count("SELECT COUNT(*)::int AS c FROM bookings WHERE status = 'completed'"),
+        count("SELECT COUNT(*)::int AS c FROM applications WHERE status = 'pending'"),
+        query<{ s: number | string }>('SELECT COALESCE(SUM(amount), 0)::int AS s FROM commissions'),
+      ]);
+
+    const totalCommissions = Number(commissionsRow.rows[0]?.s) || 0;
 
     const stats: DashboardStats = {
       totalArtists,
@@ -26,10 +35,12 @@ router.get('/', authMiddleware, requireRole('admin'), (_req, res, next) => {
       pendingStudioApplications,
     };
 
-    const recentBookings = db.prepare('SELECT * FROM bookings ORDER BY created_at DESC LIMIT 5').all();
-    const recentApplications = db.prepare('SELECT * FROM applications ORDER BY submitted_at DESC LIMIT 5').all();
+    const [recentBookings, recentApplications] = await Promise.all([
+      query('SELECT * FROM bookings ORDER BY created_at DESC LIMIT 5'),
+      query('SELECT * FROM applications ORDER BY submitted_at DESC LIMIT 5'),
+    ]);
 
-    res.json({ stats, recentBookings, recentApplications });
+    res.json({ stats, recentBookings: recentBookings.rows, recentApplications: recentApplications.rows });
   } catch (err) {
     next(err);
   }

@@ -1,8 +1,13 @@
 import { Router } from 'express';
-import { db } from '../db.js';
+import { query } from '../db.js';
 import type { DashboardStats } from '../types.js';
 
 const router = Router();
+
+async function count(sql: string): Promise<number> {
+  const { rows } = await query<{ c: number | string }>(sql);
+  return Number(rows[0]?.c) || 0;
+}
 
 /**
  * Public, unauthenticated aggregate stats used by the marketing site's trust
@@ -10,13 +15,15 @@ const router = Router();
  * figures (commissions, pending applications) are intentionally zeroed so they
  * are not exposed publicly.
  */
-router.get('/', (_req, res, next) => {
+router.get('/', async (_req, res, next) => {
   try {
-    const totalArtists = (db.prepare("SELECT COUNT(*) as c FROM artists WHERE status = 'active'").get() as { c: number }).c;
-    const totalBookings = (db.prepare('SELECT COUNT(*) as c FROM bookings').get() as { c: number }).c;
-    const pendingBookings = (db.prepare("SELECT COUNT(*) as c FROM bookings WHERE status IN ('new', 'reviewed', 'matched')").get() as { c: number }).c;
-    const confirmedBookings = (db.prepare("SELECT COUNT(*) as c FROM bookings WHERE status IN ('confirmed', 'deposit_paid')").get() as { c: number }).c;
-    const completedBookings = (db.prepare("SELECT COUNT(*) as c FROM bookings WHERE status = 'completed'").get() as { c: number }).c;
+    const [totalArtists, totalBookings, pendingBookings, confirmedBookings, completedBookings] = await Promise.all([
+      count("SELECT COUNT(*)::int AS c FROM artists WHERE status = 'active'"),
+      count('SELECT COUNT(*)::int AS c FROM bookings'),
+      count("SELECT COUNT(*)::int AS c FROM bookings WHERE status IN ('new', 'reviewed', 'matched')"),
+      count("SELECT COUNT(*)::int AS c FROM bookings WHERE status IN ('confirmed', 'deposit_paid')"),
+      count("SELECT COUNT(*)::int AS c FROM bookings WHERE status = 'completed'"),
+    ]);
 
     const stats: DashboardStats = {
       totalArtists,

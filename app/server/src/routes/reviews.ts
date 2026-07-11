@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { db } from '../db.js';
+import { query } from '../db.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { generateId } from '../utils/id.js';
 import type { AuthRequest } from '../middleware/auth.js';
@@ -13,46 +13,49 @@ function rowToReview(row: Record<string, unknown>): Review {
     booking_id: row.booking_id as string | undefined,
     artist_id: row.artist_id as string,
     customer_id: row.customer_id as string | undefined,
-    artistry: row.artistry as number | undefined,
-    professionalism: row.professionalism as number | undefined,
-    cleanliness: row.cleanliness as number | undefined,
-    communication: row.communication as number | undefined,
-    value: row.value as number | undefined,
+    artistry: row.artistry == null ? undefined : Number(row.artistry),
+    professionalism: row.professionalism == null ? undefined : Number(row.professionalism),
+    cleanliness: row.cleanliness == null ? undefined : Number(row.cleanliness),
+    communication: row.communication == null ? undefined : Number(row.communication),
+    value: row.value == null ? undefined : Number(row.value),
     comment: row.comment as string | undefined,
     photo_url: row.photo_url as string | undefined,
-    is_published: (row.is_published as number) ?? 0,
+    is_published: Number(row.is_published) || 0,
     submitted_at: row.submitted_at as string,
   };
 }
 
-router.get('/', (_req, res, next) => {
+router.get('/', async (_req, res, next) => {
   try {
-    const rows = db.prepare('SELECT * FROM reviews WHERE is_published = 1 ORDER BY submitted_at DESC').all() as Record<string, unknown>[];
+    const { rows } = await query('SELECT * FROM reviews WHERE is_published = 1 ORDER BY submitted_at DESC');
     res.json(rows.map(rowToReview));
   } catch (err) {
     next(err);
   }
 });
 
-router.get('/artist/:artistId', (req, res, next) => {
+router.get('/artist/:artistId', async (req, res, next) => {
   try {
-    const rows = db.prepare('SELECT * FROM reviews WHERE artist_id = ? AND is_published = 1 ORDER BY submitted_at DESC').all(req.params.artistId) as Record<string, unknown>[];
+    const { rows } = await query(
+      'SELECT * FROM reviews WHERE artist_id = $1 AND is_published = 1 ORDER BY submitted_at DESC',
+      [req.params.artistId]
+    );
     res.json(rows.map(rowToReview));
   } catch (err) {
     next(err);
   }
 });
 
-router.get('/all', authMiddleware, requireRole('admin'), (_req, res, next) => {
+router.get('/all', authMiddleware, requireRole('admin'), async (_req, res, next) => {
   try {
-    const rows = db.prepare('SELECT * FROM reviews ORDER BY submitted_at DESC').all() as Record<string, unknown>[];
+    const { rows } = await query('SELECT * FROM reviews ORDER BY submitted_at DESC');
     res.json(rows.map(rowToReview));
   } catch (err) {
     next(err);
   }
 });
 
-router.post('/', authMiddleware, (req: AuthRequest, res, next) => {
+router.post('/', authMiddleware, async (req: AuthRequest, res, next) => {
   try {
     const body = req.body as Partial<Review>;
     const customerId = req.user!.id;
@@ -64,9 +67,11 @@ router.post('/', authMiddleware, (req: AuthRequest, res, next) => {
 
     // A review must be tied to a real, completed booking owned by this customer
     // for this artist. This stops anonymous / self-published 5.0 inflation.
-    const booking = body.booking_id
-      ? (db.prepare('SELECT * FROM bookings WHERE id = ?').get(body.booking_id) as Record<string, unknown> | undefined)
-      : undefined;
+    let booking: Record<string, unknown> | undefined;
+    if (body.booking_id) {
+      const { rows } = await query('SELECT * FROM bookings WHERE id = $1', [body.booking_id]);
+      booking = rows[0];
+    }
     if (!booking) {
       res.status(400).json({ error: 'A valid booking is required to leave a review' });
       return;
@@ -85,48 +90,53 @@ router.post('/', authMiddleware, (req: AuthRequest, res, next) => {
     }
 
     const id = generateId('review');
-    db.prepare(
-      'INSERT INTO reviews (id, booking_id, artist_id, customer_id, artistry, professionalism, cleanliness, communication, value, comment, photo_url, is_published) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-    ).run(
-      id,
-      booking.id,
-      body.artist_id,
-      customerId,
-      body.artistry || null,
-      body.professionalism || null,
-      body.cleanliness || null,
-      body.communication || null,
-      body.value || null,
-      body.comment || null,
-      body.photo_url || null,
-      0 // always unpublished until an admin moderates via PATCH /:id/moderate
+    await query(
+      'INSERT INTO reviews (id, booking_id, artist_id, customer_id, artistry, professionalism, cleanliness, communication, value, comment, photo_url, is_published) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+      [
+        id,
+        booking.id,
+        body.artist_id,
+        customerId,
+        body.artistry || null,
+        body.professionalism || null,
+        body.cleanliness || null,
+        body.communication || null,
+        body.value || null,
+        body.comment || null,
+        body.photo_url || null,
+        0, // always unpublished until an admin moderates via PATCH /:id/moderate
+      ]
     );
-    const row = db.prepare('SELECT * FROM reviews WHERE id = ?').get(id) as Record<string, unknown>;
-    res.status(201).json(rowToReview(row));
+    const { rows } = await query('SELECT * FROM reviews WHERE id = $1', [id]);
+    res.status(201).json(rowToReview(rows[0]));
   } catch (err) {
     next(err);
   }
 });
 
-router.patch('/:id/moderate', authMiddleware, requireRole('admin'), (req: AuthRequest, res, next) => {
+router.patch('/:id/moderate', authMiddleware, requireRole('admin'), async (req: AuthRequest, res, next) => {
   try {
     const { is_published } = req.body as { is_published: boolean };
-    db.prepare('UPDATE reviews SET is_published = ? WHERE id = ?').run(is_published ? 1 : 0, req.params.id);
-    const row = db.prepare('SELECT * FROM reviews WHERE id = ?').get(req.params.id) as Record<string, unknown>;
-    updateArtistRating(row.artist_id as string);
-    res.json(rowToReview(row));
+    await query('UPDATE reviews SET is_published = $1 WHERE id = $2', [is_published ? 1 : 0, req.params.id]);
+    const { rows } = await query('SELECT * FROM reviews WHERE id = $1', [req.params.id]);
+    await updateArtistRating(rows[0].artist_id as string);
+    res.json(rowToReview(rows[0]));
   } catch (err) {
     next(err);
   }
 });
 
-function updateArtistRating(artistId: string): void {
-  const result = db.prepare(
-    'SELECT AVG((artistry + professionalism + cleanliness + communication + value) / 5.0) as avg, COUNT(*) as count FROM reviews WHERE artist_id = ? AND is_published = 1'
-  ).get(artistId) as { avg: number | null; count: number } | undefined;
+async function updateArtistRating(artistId: string): Promise<void> {
+  const { rows } = await query<{ avg: string | number | null; count: string | number }>(
+    'SELECT AVG((artistry + professionalism + cleanliness + communication + value) / 5.0) AS avg, COUNT(*)::int AS count FROM reviews WHERE artist_id = $1 AND is_published = 1',
+    [artistId]
+  );
+  const result = rows[0];
   if (!result) return;
-  const rating = result.avg ? Math.round(result.avg * 10) / 10 : 0;
-  db.prepare('UPDATE artists SET rating = ?, review_count = ? WHERE id = ?').run(rating, result.count, artistId);
+  const avg = result.avg == null ? 0 : Number(result.avg);
+  const count = Number(result.count) || 0;
+  const rating = avg ? Math.round(avg * 10) / 10 : 0;
+  await query('UPDATE artists SET rating = $1, review_count = $2 WHERE id = $3', [rating, count, artistId]);
 }
 
 export default router;
