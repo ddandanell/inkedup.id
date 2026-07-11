@@ -79,3 +79,60 @@ Key endpoints:
 - All data persists in the local SQLite file.
 - WhatsApp CTAs use `wa.me` links; no external WhatsApp API integration is required.
 - Images are served as static assets from `app/public/`.
+
+## Deploy
+
+The frontend and API deploy **separately**, because the API uses `better-sqlite3` with a
+writable local file — that needs a persistent disk, which Vercel's serverless platform does
+not provide. So: **Vercel serves the frontend, Render/Railway runs the API.**
+
+### 1) Backend API → Render (or Railway)
+
+Render Web Service settings:
+
+| Setting | Value |
+|---|---|
+| Root Directory | `app` |
+| Build Command | `npm install` |
+| Start Command | `npm run server:once` |
+| Persistent Disk | 1 GB, mount path `/opt/render/project/src/app/server/data` |
+
+Environment variables:
+
+```
+NODE_ENV=production
+JWT_SECRET=<32+ char random string>
+ADMIN_EMAIL=admin@inkedup.id
+ADMIN_PASSWORD=<strong password>
+CORS_ORIGIN=https://<your-vercel-app>.vercel.app
+```
+
+After first deploy, seed once from the Render shell: `npm run seed`.
+Verify: `https://<api-host>/api/health` returns `{"status":"ok"}`.
+
+> Railway works the same way — attach a volume at `app/server/data` and set the same env vars.
+
+### 2) Frontend → Vercel
+
+Import the repo and set **Root Directory = `app`**. `app/vercel.json` already configures the
+Vite build, the SPA fallback rewrite to `index.html`, and security/cache headers.
+
+Environment variable:
+
+```
+VITE_API_URL=https://<api-host>/api
+```
+
+Then deploy. The frontend calls the API at `VITE_API_URL` in production and uses the local
+Vite proxy (`/api` → `:3001`) in development.
+
+### 3) Tie them together
+
+- Set backend `CORS_ORIGIN` to the final Vercel domain (add your custom domain too, comma-separated).
+- Set frontend `VITE_API_URL` to the backend host + `/api`.
+- Redeploy the backend after changing `CORS_ORIGIN`.
+
+### Production secrets
+
+Never commit real secrets. `JWT_SECRET` and `ADMIN_PASSWORD` throw on startup if unset in
+production. Business contact details live in `app/src/data/business.ts` (edit once, used everywhere).
