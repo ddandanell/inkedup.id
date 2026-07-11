@@ -82,55 +82,72 @@ Key endpoints:
 
 ## Deploy
 
-The frontend and API deploy **separately**, because the API uses `better-sqlite3` with a
-writable local file — that needs a persistent disk, which Vercel's serverless platform does
-not provide. So: **Vercel serves the frontend, Render/Railway runs the API.**
+Everything deploys to **one Vercel project**: the Vite frontend is served as static files and
+the Express API is wrapped as a single Vercel Function at `app/api/[...path].ts` (catch-all),
+mounted under `/api/*`. Data lives in **Neon Postgres** and is queried over the
+`@neondatabase/serverless` HTTP driver (no native module, no persistent disk needed), so the
+whole app runs on Vercel serverless. The old `better-sqlite3`/Render split is retired.
 
-### 1) Backend API → Render (or Railway)
-
-Render Web Service settings:
+Project settings (already configured on the Vercel project):
 
 | Setting | Value |
 |---|---|
 | Root Directory | `app` |
-| Build Command | `npm install` |
-| Start Command | `npm run server:once` |
-| Persistent Disk | 1 GB, mount path `/opt/render/project/src/app/server/data` |
+| Framework Preset | Vite |
+| Build Command | `npm run build` |
+| Install Command | `npm install` |
+| Output Directory | `dist` |
 
-Environment variables:
+`app/vercel.json` configures the Vite build, the SPA fallback rewrite to `index.html`
+(`/` and every non-`/api` route), and security/cache headers.
+
+### Environment variables (set on Vercel, never committed)
+
+`DATABASE_URL` is provided automatically by the **Neon↔Vercel integration** (the project is
+already linked to the Neon database). The remaining variables are set with the CLI:
 
 ```
-NODE_ENV=production
-JWT_SECRET=<32+ char random string>
+JWT_SECRET=<32+ char random string>      # production; app throws if unset/weak
 ADMIN_EMAIL=admin@inkedup.id
-ADMIN_PASSWORD=<strong password>
-CORS_ORIGIN=https://<your-vercel-app>.vercel.app
+ADMIN_PASSWORD=<strong password>         # required to seed in production
+CORS_ORIGIN=https://<your-vercel-domain> # comma-separated list; add your custom domain
 ```
 
-After first deploy, seed once from the Render shell: `npm run seed`.
-Verify: `https://<api-host>/api/health` returns `{"status":"ok"}`.
+`VITE_API_URL` is **not** needed: the API is same-origin at `/api`, which the frontend uses
+by default (`app/src/services/api.ts`). In local development the Vite proxy forwards `/api`
+to the API on `:3001`.
 
-> Railway works the same way — attach a volume at `app/server/data` and set the same env vars.
+### Seed once (against Neon)
 
-### 2) Frontend → Vercel
-
-Import the repo and set **Root Directory = `app`**. `app/vercel.json` already configures the
-Vite build, the SPA fallback rewrite to `index.html`, and security/cache headers.
-
-Environment variable:
+Run from your machine with the Neon connection string (use the **pooled** `DATABASE_URL` from
+the integration) and the same admin credentials you set on Vercel:
 
 ```
-VITE_API_URL=https://<api-host>/api
+cd app
+DATABASE_URL="<pooled Neon URL>" \
+NODE_ENV=production \
+ADMIN_EMAIL=admin@inkedup.id \
+ADMIN_PASSWORD="<strong password>" \
+npm run seed
 ```
 
-Then deploy. The frontend calls the API at `VITE_API_URL` in production and uses the local
-Vite proxy (`/api` → `:3001`) in development.
+The seed creates the schema (idempotent) and inserts demo data. It aborts if the database
+already has users; set `ALLOW_RESET=1` to wipe and reseed.
 
-### 3) Tie them together
+### Verify
 
-- Set backend `CORS_ORIGIN` to the final Vercel domain (add your custom domain too, comma-separated).
-- Set frontend `VITE_API_URL` to the backend host + `/api`.
-- Redeploy the backend after changing `CORS_ORIGIN`.
+- `https://<your-vercel-domain>/api/health` → `{"status":"ok"}`
+- `https://<your-vercel-domain>/api/stats` → aggregate counts
+- `https://<your-vercel-domain>/api/locations` → 8 Bali locations
+- `https://<your-vercel-domain>/` and any deep link (e.g. `/locations`) → the SPA
+
+### Deploy
+
+Push to `main` — the GitHub integration builds from `app/` and promotes to production
+automatically. Manual deploy: `cd app && vercel --prod`.
+
+> Note: Vercel Deployment Protection (SSO) may be enabled on this team. If a URL returns a
+> 302 login redirect, open it from the Vercel dashboard or generate a share link.
 
 ### Production secrets
 

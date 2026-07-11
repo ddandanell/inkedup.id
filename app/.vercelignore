@@ -1,5 +1,5 @@
-# Frontend deploy only — the Express/SQLite API is deployed separately (see README).
-server
+# One Vercel project: static Vite build + the /api Function (which imports server/src).
+# node_modules is installed by Vercel at build time; dist is generated, not uploaded.
 node_modules
 dist
 *.db
