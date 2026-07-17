@@ -146,6 +146,15 @@ const SCRAPE_QUERIES: ScrapeQuery[] = [
   { query: 'key tattoo', maxPages: 10 },
   { query: 'lock tattoo', maxPages: 10 },
   { query: 'music tattoo', maxPages: 10 },
+  { query: 'tatuaje', maxPages: 10 },
+  { query: 'tatuajes', maxPages: 10 },
+  { query: 'tatouage', maxPages: 10 },
+  { query: 'tatuagem', maxPages: 10 },
+  { query: 'tätowierung', maxPages: 10 },
+  { query: 'tattoo model', maxPages: 10 },
+  { query: 'tattooed model', maxPages: 10 },
+  { query: 'tattoo photography', maxPages: 10 },
+  { query: 'tattoo close up', maxPages: 10 },
 ];
 
 function parseArgs(): { target: number; dryRun: boolean; source: string } {
