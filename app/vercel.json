@@ -4,14 +4,48 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  "routes": [
+    { "src": "/sitemap\\.xml", "dest": "/api/sitemap.xml" },
+    { "src": "/api/(.*)", "dest": "/api" },
+    { "handle": "filesystem" },
+    { "src": "/(.*\\..*)", "status": 404, "dest": "/404.html" },
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/artists", "dest": "/index.html" },
+    { "src": "/artists/([^/]+)", "dest": "/index.html" },
+    { "src": "/studios", "dest": "/index.html" },
+    { "src": "/studios/([^/]+)", "dest": "/index.html" },
+    { "src": "/locations", "dest": "/index.html" },
+    { "src": "/locations/([^/]+)", "dest": "/index.html" },
+    { "src": "/safety", "dest": "/index.html" },
+    { "src": "/pricing", "dest": "/index.html" },
+    { "src": "/price-calculator", "dest": "/index.html" },
+    { "src": "/faq", "dest": "/index.html" },
+    { "src": "/how-it-works", "dest": "/index.html" },
+    { "src": "/contact", "dest": "/index.html" },
+    { "src": "/inspiration", "dest": "/index.html" },
+    { "src": "/privacy", "dest": "/index.html" },
+    { "src": "/terms", "dest": "/index.html" },
+    { "src": "/login", "dest": "/index.html" },
+    { "src": "/studio/apply", "dest": "/index.html" },
+    { "src": "/artist/apply", "dest": "/index.html" },
+    { "src": "/artist/dashboard", "dest": "/index.html" },
+    { "src": "/artist/profile", "dest": "/index.html" },
+    { "src": "/admin/dashboard", "dest": "/index.html" },
+    { "src": "/admin/artists", "dest": "/index.html" },
+    { "src": "/admin/applications", "dest": "/index.html" },
+    { "src": "/admin/bookings", "dest": "/index.html" },
+    { "src": "/admin/commissions", "dest": "/index.html" },
+    { "src": "/admin/pricing", "dest": "/index.html" },
+    { "src": "/booking/([^/]+)", "dest": "/index.html" },
+    { "src": "/(.*)", "status": 404, "dest": "/404.html" }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src 'self'; frame-src 'none'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; upgrade-insecure-requests" },
+        { "key": "X-Frame-Options", "value": "DENY" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "geolocation=(), microphone=(), camera=()" }
@@ -19,6 +53,12 @@
     },
     {
       "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.(jpg|jpeg|png|webp|gif|svg|ico|avif)$",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]

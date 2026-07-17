@@ -12,6 +12,24 @@ import {
 import ArtistCard from '@/components/ArtistCard';
 import store from '@/data/store';
 import type { Studio, Artist } from '@/data/types';
+import { useSEO } from '@/hooks/useSEO';
+
+function truncate(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const trimmed = text.slice(0, max);
+  const lastSpace = trimmed.lastIndexOf(' ');
+  return (lastSpace > 0 ? trimmed.slice(0, lastSpace) : trimmed) + '…';
+}
+
+function buildStudioDescription(studio: Studio): string {
+  if (studio.bio) {
+    return truncate(
+      `${studio.name} is a tattoo studio in ${studio.location}. ${studio.bio}`,
+      160
+    );
+  }
+  return `${studio.name} is a verified tattoo studio in ${studio.location}.`;
+}
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -58,6 +76,37 @@ export default function StudioProfile() {
     if (!studio) return [];
     return artists.filter((a) => a.studioId === studio.id || studio.artistIds.includes(a.id));
   }, [studio, artists]);
+
+  const studioPath = `/studios/${id ?? ''}`;
+  const studioTitle = studio
+    ? `${studio.name} — Tattoo Studio in ${studio.location}`
+    : 'Studio Profile';
+  const studioDescription = studio
+    ? buildStudioDescription(studio)
+    : 'View verified tattoo studios on InkedUp.';
+
+  // NOTE: keep this hook call before any early returns to satisfy React hooks rules.
+  useSEO({
+    title: studioTitle,
+    description: studioDescription,
+    path: studioPath,
+    canonical: studioPath,
+    image: studio?.logoUrl || '/tattoo-work-4.jpg',
+    jsonLd: studio
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'TattooParlor',
+          name: studio.name,
+          description: studio.bio || `Tattoo studio in ${studio.location}`,
+          url: studioPath,
+          image: studio.logoUrl || '/tattoo-work-4.jpg',
+          areaServed: {
+            '@type': 'City',
+            name: studio.location,
+          },
+        }
+      : undefined,
+  });
 
   if (loading) {
     return (

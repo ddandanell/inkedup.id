@@ -25,9 +25,12 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          motion: ['framer-motion'],
-          charts: ['recharts'],
+        // Keep large libraries out of the entry chunk. framer-motion stays
+        // split because it is used across many routes; recharts is left to
+        // Rollup's natural chunking because it is only reached through
+        // lazy-loaded admin routes, so it never ends up in the entry chunk.
+        manualChunks(id) {
+          if (id.includes('node_modules/framer-motion')) return 'motion';
         },
       },
     },

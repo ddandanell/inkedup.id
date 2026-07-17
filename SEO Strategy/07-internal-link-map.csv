@@ -1,0 +1,112 @@
+source_url,target_url,anchor_text,link_location,status,notes
+(sitewide),/,INKEDUP (logo),navbar logo,derived-from-code,"Navbar.tsx:93; zero <a href> in raw HTML — all links JS-rendered only (Finding 6, P2); target verified 200"
+(sitewide),/artists,Artists,navbar Discover dropdown,derived-from-code,"Navbar.tsx:7; target verified 200"
+(sitewide),/studios,Studios,navbar Discover dropdown,derived-from-code,"Navbar.tsx:8; target verified 200"
+(sitewide),/inspiration,Inspiration,navbar Discover dropdown,derived-from-code,"Navbar.tsx:9; target verified 200"
+(sitewide),/locations,Locations,navbar main links,derived-from-code,"Navbar.tsx:13; target verified 200"
+(sitewide),/how-it-works,How It Works,navbar main links,derived-from-code,"Navbar.tsx:14; target verified 200"
+(sitewide),/pricing,Pricing,navbar main links,derived-from-code,"Navbar.tsx:15; target verified 200"
+(sitewide),/safety,Safety,navbar main links,derived-from-code,"Navbar.tsx:16; target verified 200"
+(sitewide),/studio/apply,Apply as Studio,navbar main links,derived-from-code,"Navbar.tsx:17; target verified 200"
+(sitewide),/artists,Book Now,navbar CTA button,derived-from-code,"Navbar.tsx:184-189 (desktop) + 286-291 (mobile); target verified 200"
+(sitewide),/artists,Artists,footer Explore column,derived-from-code,"Footer.tsx:13; target verified 200"
+(sitewide),/studios,Studios,footer Explore column,derived-from-code,"Footer.tsx:14; target verified 200"
+(sitewide),/inspiration,Inspiration,footer Explore column,derived-from-code,"Footer.tsx:15; target verified 200"
+(sitewide),/locations,Locations,footer Explore column,derived-from-code,"Footer.tsx:16; target verified 200"
+(sitewide),/how-it-works,How It Works,footer Explore column,derived-from-code,"Footer.tsx:17; target verified 200"
+(sitewide),/pricing,Pricing,footer Explore column,derived-from-code,"Footer.tsx:18; target verified 200"
+(sitewide),/safety,Safety,footer Explore column,derived-from-code,"Footer.tsx:19; target verified 200"
+(sitewide),/faq,FAQ,footer Explore column,derived-from-code,"Footer.tsx:20; FAQ absent from navbar — footer-only nav entry (Finding 15, P3)"
+(sitewide),/studio/apply,Apply as Studio,footer Explore column,derived-from-code,"Footer.tsx:21; target verified 200"
+(sitewide),/locations,Canggu,footer Locations column,derived-from-code,"Footer.tsx:25 — GAP: points to /locations, NOT /locations/canggu (Finding 7, P2)"
+(sitewide),/locations,Seminyak,footer Locations column,derived-from-code,"Footer.tsx:26 — GAP: points to /locations, NOT /locations/seminyak (Finding 7, P2)"
+(sitewide),/locations,Uluwatu,footer Locations column,derived-from-code,"Footer.tsx:27 — GAP: points to /locations, NOT /locations/uluwatu (Finding 7, P2)"
+(sitewide),/locations,Ubud,footer Locations column,derived-from-code,"Footer.tsx:28 — GAP: points to /locations, NOT /locations/ubud (Finding 7, P2); only 4 of 8 areas listed (kuta, sanur, nusa-dua, jimbaran missing entirely)"
+(sitewide),/,INKEDUP (logo),footer brand column,derived-from-code,Footer.tsx:47
+(sitewide),/privacy,Privacy Policy,footer bottom bar,derived-from-code,Footer.tsx:179
+(sitewide),/terms,Terms of Service,footer bottom bar,derived-from-code,Footer.tsx:183
+(sitewide),https://wa.me/6281234567890,+62 812-3456-7890,footer Get in Touch column (WhatsAppButton),placeholder,"Footer.tsx:112-117 via business.ts:12 — placeholder number, breaks primary conversion path (Finding 1, P0)"
+(sitewide),mailto:hello@inkedup.id,hello@inkedup.id,footer Get in Touch column,placeholder,"Footer.tsx:118-124 via business.ts:16 — placeholder inbox (Finding 1, P0)"
+(sitewide),https://instagram.com/inkedup.bali,@inkedup.bali,footer Get in Touch column + social icons,derived-from-code,"Footer.tsx:125-133,138-146 via business.ts:23 — external; handle existence UNVERIFIED (OWNER-VERIFY)"
+(sitewide),https://tiktok.com/@inkedup.bali,TikTok icon,footer social icons,derived-from-code,"Footer.tsx:152-162 via business.ts:24 — external; handle existence UNVERIFIED (OWNER-VERIFY)"
+/,/artists,Browse Artists,hero slideshow CTA,derived-from-code,HeroSlideshow.tsx:130-135
+/,/#how-it-works,(scroll anchor),hero slideshow secondary CTA,derived-from-code,"HeroSlideshow.tsx:137 — in-page anchor, not a route"
+/,/artists,View All Artists,homepage Featured Artists section,derived-from-code,Home.tsx:281
+/,/locations,See All Locations,homepage locations section,derived-from-code,"Home.tsx:411 — GAP: the 8 homepage location cards themselves are NOT links (Home.tsx:374-407, no Link wrapper) (Finding 15, P3)"
+/,/safety,Learn About Our Safety Protocols,homepage safety section,derived-from-code,Home.tsx:559
+/,/pricing,See Full Pricing Details,homepage pricing section,derived-from-code,Home.tsx:673
+/,/artists,Browse Artists,homepage CTA banner,derived-from-code,Home.tsx:729
+/,https://wa.me/+6281234567890,Or contact us on WhatsApp,homepage CTA banner,placeholder,"Home.tsx:735 — hardcoded placeholder number WITH leading '+' (wa.me spec requires digits only; may fail), bypasses business.ts (Finding 1, P0)"
+/locations,/locations/canggu,Canggu (card image + name + ""Explore Canggu""),area card,derived-from-code,"Locations.tsx:209,230,276; target verified 200"
+/locations,/locations/seminyak,Seminyak (card image + name + ""Explore Seminyak""),area card,derived-from-code,Locations.tsx:209/230/276 pattern
+/locations,/locations/kuta,Kuta (card image + name + ""Explore Kuta""),area card,derived-from-code,Locations.tsx:209/230/276 pattern
+/locations,/locations/uluwatu,Uluwatu (card image + name + ""Explore Uluwatu""),area card,derived-from-code,Locations.tsx:209/230/276 pattern
+/locations,/locations/ubud,Ubud (card image + name + ""Explore Ubud""),area card,derived-from-code,Locations.tsx:209/230/276 pattern
+/locations,/locations/sanur,Sanur (card image + name + ""Explore Sanur""),area card,derived-from-code,Locations.tsx:209/230/276 pattern
+/locations,/locations/nusa-dua,Nusa Dua (card image + name + ""Explore Nusa Dua""),area card,derived-from-code,Locations.tsx:209/230/276 pattern
+/locations,/locations/jimbaran,Jimbaran (card image + name + ""Explore Jimbaran""),area card,derived-from-code,Locations.tsx:209/230/276 pattern
+/locations,/contact,Contact Us,"locations page ""Not in Our Service Area?"" CTA",derived-from-code,Locations.tsx:333
+/locations,https://wa.me/6281234567890,WhatsApp →,"locations page ""Not in Our Service Area?"" CTA",placeholder,"Locations.tsx:339 via waLink() business.ts:30-33 — placeholder number (Finding 1, P0)"
+/locations/:slug (×8),/,Home,breadcrumb,derived-from-code,"LocationPage.tsx:175 — breadcrumbs exist ONLY on location pages; GAP: no breadcrumbs on artists/studios/profile/other pages"
+/locations/:slug (×8),/locations,Locations,breadcrumb,derived-from-code,LocationPage.tsx:177
+/locations/:slug (×8),/pricing,See full pricing & calculator,Travel & pricing card,derived-from-code,LocationPage.tsx:278
+/locations/:slug (×8),/artists/{slug},{Artist displayName},"""Artists serving {Area}"" cards",derived-from-code,"LocationPage.tsx:301-303 — dynamic per-area artist links; GAP: target artist profiles are NOT in sitemap (orphan-by-sitemap; Finding 5, P2)"
+/locations/:slug (×8),/artists,Browse all artists,artists section footer,derived-from-code,LocationPage.tsx:326
+/locations/:slug (×8),https://wa.me/6281234567890,Book in {Area},page CTA section,placeholder,"LocationPage.tsx:403 via waLink() — placeholder number (Finding 1, P0)"
+/locations/:slug (×8),/artists,Browse artists,page CTA section,derived-from-code,LocationPage.tsx:411
+/locations/canggu,/locations/seminyak,Seminyak,Nearby service areas,derived-from-code,locationContent.ts:61 related
+/locations/canggu,/locations/kuta,Kuta,Nearby service areas,derived-from-code,locationContent.ts:61 related
+/locations/canggu,/locations/ubud,Ubud,Nearby service areas,derived-from-code,locationContent.ts:61 related
+/locations/seminyak,/locations/canggu,Canggu,Nearby service areas,derived-from-code,locationContent.ts:98 related
+/locations/seminyak,/locations/kuta,Kuta,Nearby service areas,derived-from-code,locationContent.ts:98 related
+/locations/seminyak,/locations/nusa-dua,Nusa Dua,Nearby service areas,derived-from-code,locationContent.ts:98 related
+/locations/kuta,/locations/seminyak,Seminyak,Nearby service areas,derived-from-code,locationContent.ts:135 related
+/locations/kuta,/locations/canggu,Canggu,Nearby service areas,derived-from-code,locationContent.ts:135 related
+/locations/kuta,/locations/jimbaran,Jimbaran,Nearby service areas,derived-from-code,locationContent.ts:135 related
+/locations/uluwatu,/locations/jimbaran,Jimbaran,Nearby service areas,derived-from-code,locationContent.ts:172 related
+/locations/uluwatu,/locations/nusa-dua,Nusa Dua,Nearby service areas,derived-from-code,locationContent.ts:172 related
+/locations/uluwatu,/locations/canggu,Canggu,Nearby service areas,derived-from-code,locationContent.ts:172 related
+/locations/ubud,/locations/canggu,Canggu,Nearby service areas,derived-from-code,locationContent.ts:209 related
+/locations/ubud,/locations/sanur,Sanur,Nearby service areas,derived-from-code,locationContent.ts:209 related
+/locations/ubud,/locations/seminyak,Seminyak,Nearby service areas,derived-from-code,locationContent.ts:209 related
+/locations/sanur,/locations/ubud,Ubud,Nearby service areas,derived-from-code,locationContent.ts:246 related
+/locations/sanur,/locations/nusa-dua,Nusa Dua,Nearby service areas,derived-from-code,locationContent.ts:246 related
+/locations/sanur,/locations/kuta,Kuta,Nearby service areas,derived-from-code,locationContent.ts:246 related
+/locations/nusa-dua,/locations/uluwatu,Uluwatu,Nearby service areas,derived-from-code,locationContent.ts:283 related
+/locations/nusa-dua,/locations/jimbaran,Jimbaran,Nearby service areas,derived-from-code,locationContent.ts:283 related
+/locations/nusa-dua,/locations/sanur,Sanur,Nearby service areas,derived-from-code,locationContent.ts:283 related
+/locations/jimbaran,/locations/uluwatu,Uluwatu,Nearby service areas,derived-from-code,locationContent.ts:320 related
+/locations/jimbaran,/locations/kuta,Kuta,Nearby service areas,derived-from-code,locationContent.ts:320 related
+/locations/jimbaran,/locations/nusa-dua,Nusa Dua,Nearby service areas,derived-from-code,locationContent.ts:320 related
+/artists,/artists/{slug},{artist card},artist directory cards,derived-from-code,"ArtistCard.tsx:24 — 8 seed artists; GAP: profiles absent from sitemap (orphan-by-sitemap, Finding 5, P2); no breadcrumbs on profiles"
+/artists,/contact,(contact CTA),artists page CTA section,derived-from-code,Artists.tsx:488
+/artists,https://wa.me/6281234567890,(WhatsApp CTA),artists page CTA section,placeholder,"Artists.tsx:494 — hardcoded placeholder number, bypasses business.ts (Finding 1, P0)"
+/artists/:slug (×8),/artists,Back to artists,profile back links,derived-from-code,"ArtistProfile.tsx:195,219"
+/artists/:slug (×8),/booking/{slug},Book a Session,profile booking CTAs (×3),derived-from-code,"ArtistProfile.tsx:286,578,642; GAP: /booking/:slug not in robots.txt, no noindex — thin funnel pages indexable (Finding 16, P3)"
+/artists/:slug (×8),https://instagram.com/{artist.instagram},{IG handle},profile social link,derived-from-code,"ArtistProfile.tsx:406 — external; seed-data handles, existence UNVERIFIED"
+/studios,/studios/{id},{studio card},studio directory cards,derived-from-code,"Studios.tsx:152 — 8 seed studios; GAP: profiles absent from sitemap (orphan-by-sitemap, Finding 5, P2)"
+/studios/:id (×8),/studios,Back to studios,profile back link,derived-from-code,StudioProfile.tsx:85
+/studios/:id (×8),mailto:{studio}@inkedup.id,{studio email},profile contact row,placeholder,"StudioProfile.tsx:128 — seed placeholder emails (Finding 4, P1)"
+/studios/:id (×8),https://wa.me/{studio-placeholder-number},WhatsApp,profile contact row,placeholder,"StudioProfile.tsx:144 — sequential placeholder numbers +6281234567891…898 (Finding 1, P0)"
+/studios/:id (×8),/artists,(artists CTA),profile artist section,derived-from-code,StudioProfile.tsx:192
+/pricing,/artists,(artist CTAs ×3),pricing page CTAs,derived-from-code,"Pricing.tsx:239,492,621"
+/pricing,https://wa.me/6281234567890,(WhatsApp quote handoff),estimator quote CTA,placeholder,"Pricing.tsx:484 via waLink() — placeholder number (Finding 1, P0)"
+/how-it-works,/artists,(artists CTA),page CTA,derived-from-code,HowItWorks.tsx:467
+/how-it-works,/contact,(contact CTA),page CTA,derived-from-code,HowItWorks.tsx:474
+/faq,https://wa.me/6281234567890,(WhatsApp question CTA),FAQ page CTA,placeholder,"FAQ.tsx:394 via waLink() — placeholder number (Finding 1, P0)"
+/faq,/contact,(contact CTA),FAQ page CTA,derived-from-code,FAQ.tsx:402
+/safety,/faq,(FAQ CTA),page CTA,derived-from-code,Safety.tsx:500
+/safety,/contact,(contact CTA),page CTA,derived-from-code,Safety.tsx:506
+/inspiration,/artists,(artists CTA),gallery page CTA,derived-from-code,Inspiration.tsx:262
+/studio/apply,/,INKEDUP (logo),apply page header/footer,derived-from-code,"StudioApply.tsx:244,741"
+/studio/apply,/login,(login link),apply page header,derived-from-code,"StudioApply.tsx:247 — target /login is robots-disallowed yet returns 200 shell (Finding 8, P2)"
+/booking/:slug,/artists,(back/error CTAs),booking wizard,derived-from-code,"Booking.tsx:266,320"
+/booking/:slug,/artists/{slug},(view artist profile),booking wizard,derived-from-code,Booking.tsx:359
+/booking/:slug,/,(home link),booking success state,derived-from-code,Booking.tsx:326
+/booking/:slug,https://wa.me/6281234567890,(WhatsApp follow-up),booking success state,placeholder,"Booking.tsx:337 via waLink() — fulfilment depends on placeholder number (Finding 1/17, P0)"
+/booking/:slug,/terms,Terms of Service,booking terms checkbox + footer,derived-from-code,"Booking.tsx:772,948"
+/booking/:slug,/privacy,Privacy Policy,booking footer,derived-from-code,Booking.tsx:944
+/booking/:slug,/contact,Contact,booking footer,derived-from-code,Booking.tsx:952
+/contact,https://wa.me/6281234567890,(WhatsApp card),contact page,placeholder,"Contact.tsx:117 via waLink() — placeholder number (Finding 1, P0)"
+/contact,mailto:hello@inkedup.id,(form submit + email link),contact form / email row,placeholder,"Contact.tsx:62,184 — mailto-only form to placeholder inbox, no backend (Finding 1, P0)"
+/contact,https://instagram.com/inkedup.bali,(IG link),contact page,derived-from-code,"Contact.tsx:140 — external; handle UNVERIFIED"

@@ -2,6 +2,8 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /artist/dashboard
+Disallow: /artist/profile
 Disallow: /login
+Disallow: /booking
 
-Sitemap: https://inkedup.id/sitemap.xml
+Sitemap: https://www.inkedup.id/api/sitemap.xml

@@ -27,7 +27,7 @@ async function main(): Promise<void> {
   const adminId = generateId('user');
   await query(
     'INSERT INTO users (id, name, email, phone, password_hash, role) VALUES ($1, $2, $3, $4, $5, $6)',
-    [adminId, 'InkedUp Admin', adminEmail, '+6281234567890', bcrypt.hashSync(adminPassword, 10), 'admin']
+    [adminId, 'InkedUp Admin', adminEmail, '+628112656869', bcrypt.hashSync(adminPassword, 10), 'admin']
   );
 
   // Demo customer

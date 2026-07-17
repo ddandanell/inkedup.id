@@ -3,23 +3,24 @@ import { Routes, Route, Navigate } from 'react-router';
 import Layout from '@/components/Layout';
 import ScrollToTop from '@/components/ScrollToTop';
 import Home from '@/pages/Home';
-import Artists from '@/pages/Artists';
-import ArtistProfile from '@/pages/ArtistProfile';
-import Locations from '@/pages/Locations';
-import Studios from '@/pages/Studios';
-import Safety from '@/pages/Safety';
-import Pricing from '@/pages/Pricing';
-import FAQ from '@/pages/FAQ';
-import HowItWorks from '@/pages/HowItWorks';
-import Contact from '@/pages/Contact';
-import Login from '@/pages/Login';
-import Inspiration from '@/pages/Inspiration';
-import StudioProfile from '@/pages/StudioProfile';
-import Privacy from '@/pages/Privacy';
-import Terms from '@/pages/Terms';
-import NotFound from '@/pages/NotFound';
 
-// Heavy / rarely-hit routes are code-split so the public bundle stays small.
+// Public routes below the fold / rarely hit first are code-split so the entry
+// chunk stays small. Home stays eager because it is the landing experience.
+const Artists = lazy(() => import('@/pages/Artists'));
+const ArtistProfile = lazy(() => import('@/pages/ArtistProfile'));
+const Locations = lazy(() => import('@/pages/Locations'));
+const Studios = lazy(() => import('@/pages/Studios'));
+const Safety = lazy(() => import('@/pages/Safety'));
+const Pricing = lazy(() => import('@/pages/Pricing'));
+const FAQ = lazy(() => import('@/pages/FAQ'));
+const HowItWorks = lazy(() => import('@/pages/HowItWorks'));
+const Contact = lazy(() => import('@/pages/Contact'));
+const Login = lazy(() => import('@/pages/Login'));
+const Inspiration = lazy(() => import('@/pages/Inspiration'));
+const StudioProfile = lazy(() => import('@/pages/StudioProfile'));
+const Privacy = lazy(() => import('@/pages/Privacy'));
+const Terms = lazy(() => import('@/pages/Terms'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
 const Booking = lazy(() => import('@/pages/Booking'));
 const LocationPage = lazy(() => import('@/pages/LocationPage'));
 const StudioApply = lazy(() => import('@/pages/StudioApply'));

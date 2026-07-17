@@ -3,12 +3,17 @@ import { useEffect } from 'react';
 const SITE_NAME = 'InkedUp';
 const DEFAULT_IMAGE = '/og-image.jpg';
 const ORIGIN =
-  typeof window !== 'undefined' ? window.location.origin : 'https://inkedup.id';
+  typeof window !== 'undefined' ? window.location.origin : 'https://www.inkedup.id';
 
 interface SEOOptions {
   title: string;
   description: string;
   path?: string;
+  /**
+   * Explicit canonical href. Relative paths are emitted as-is, so callers can
+   * avoid committing to a canonical host while P0-2 is pending.
+   */
+  canonical?: string;
   image?: string;
   type?: 'website' | 'article';
   /** Optional JSON-LD object(s) injected as <script type="application/ld+json">. */
@@ -43,6 +48,7 @@ export function useSEO({
   title,
   description,
   path = '/',
+  canonical,
   image = DEFAULT_IMAGE,
   type = 'website',
   jsonLd,
@@ -51,6 +57,7 @@ export function useSEO({
     const fullTitle = title.includes(SITE_NAME) ? title : `${title} — ${SITE_NAME}`;
     const url = `${ORIGIN}${path}`;
     const imageUrl = image.startsWith('http') ? image : `${ORIGIN}${image}`;
+    const canonicalHref = canonical ?? url;
 
     document.title = fullTitle;
     setMeta('name', 'description', description);
@@ -64,7 +71,7 @@ export function useSEO({
     setMeta('name', 'twitter:title', fullTitle);
     setMeta('name', 'twitter:description', description);
     setMeta('name', 'twitter:image', imageUrl);
-    setCanonical(url);
+    setCanonical(canonicalHref);
 
     const injected: HTMLScriptElement[] = [];
     if (jsonLd) {
@@ -82,7 +89,7 @@ export function useSEO({
     return () => {
       for (const s of injected) s.remove();
     };
-  }, [title, description, path, image, type, jsonLd]);
+  }, [title, description, path, canonical, image, type, jsonLd]);
 }
 
 export default useSEO;

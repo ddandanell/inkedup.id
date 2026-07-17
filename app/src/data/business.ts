@@ -9,9 +9,9 @@ export const business = {
   legalName: 'InkedUp Bali', // TODO: registered entity name (e.g. "PT InkedUp Bali")
 
   // WhatsApp: digits only, with country code, no "+" or spaces (used for wa.me links).
-  whatsapp: '6281234567890', // TODO: real concierge WhatsApp number
+  whatsapp: '628112656869',
   // Pretty-printed version for display (unmasked — show the real number).
-  whatsappDisplay: '+62 812-3456-7890', // TODO: same number, formatted
+  whatsappDisplay: '+62 811-2656-869',
 
   email: 'hello@inkedup.id', // TODO: real inbox
 

@@ -355,10 +355,10 @@ function StyleCategoriesSection() {
 
 /* ─── Locations Preview ─── */
 const locations = [
-  { name: 'Canggu', subtitle: 'The Creative Hub', image: '/location-canggu.jpg' },
-  { name: 'Seminyak', subtitle: 'Beachfront Luxury', image: '/location-seminyak.jpg' },
-  { name: 'Uluwatu', subtitle: 'Cliffside Retreats', image: '/location-uluwatu.jpg' },
-  { name: 'Ubud', subtitle: 'Jungle Serenity', image: '/location-ubud.jpg' },
+  { name: 'Canggu', slug: 'canggu', subtitle: 'The Creative Hub', image: '/location-canggu.jpg' },
+  { name: 'Seminyak', slug: 'seminyak', subtitle: 'Beachfront Luxury', image: '/location-seminyak.jpg' },
+  { name: 'Uluwatu', slug: 'uluwatu', subtitle: 'Cliffside Retreats', image: '/location-uluwatu.jpg' },
+  { name: 'Ubud', slug: 'ubud', subtitle: 'Jungle Serenity', image: '/location-ubud.jpg' },
 ];
 
 function LocationsPreviewSection() {
@@ -383,25 +383,27 @@ function LocationsPreviewSection() {
                 delay: i * 0.12,
                 ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
               }}
-              className="group cursor-pointer"
+              className="group"
             >
-              <div className="relative aspect-[4/3] rounded-lg overflow-hidden">
-                <img
-                  src={loc.image}
-                  alt={loc.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-midnight-navy/70 to-transparent group-hover:from-midnight-navy/50 transition-all duration-300" />
-                <div className="absolute bottom-0 left-0 right-0 p-5 group-hover:translate-y-[-4px] transition-transform duration-300">
-                  <h3 className="font-display text-2xl text-pure-white">
-                    {loc.name}
-                  </h3>
-                  <p className="font-body text-[13px] text-white/80 mt-1">
-                    {loc.subtitle}
-                  </p>
+              <Link to={`/locations/${loc.slug}`} className="block cursor-pointer">
+                <div className="relative aspect-[4/3] rounded-lg overflow-hidden">
+                  <img
+                    src={loc.image}
+                    alt={loc.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-midnight-navy/70 to-transparent group-hover:from-midnight-navy/50 transition-all duration-300" />
+                  <div className="absolute bottom-0 left-0 right-0 p-5 group-hover:translate-y-[-4px] transition-transform duration-300">
+                    <h3 className="font-display text-2xl text-pure-white">
+                      {loc.name}
+                    </h3>
+                    <p className="font-body text-[13px] text-white/80 mt-1">
+                      {loc.subtitle}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </Link>
             </motion.div>
           ))}
         </div>
@@ -732,7 +734,7 @@ function CTABannerSection() {
             Browse Artists
           </Link>
           <WhatsAppButton
-            phoneNumber="+6281234567890"
+            phoneNumber="628112656869"
             className="static"
           >
             <span className="font-body text-sm text-champagne-gold underline-offset-4 hover:underline">

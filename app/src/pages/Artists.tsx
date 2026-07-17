@@ -491,7 +491,7 @@ export default function Artists() {
                 Get a Free Consultation
               </a>
               <a
-                href="https://wa.me/6281234567890"
+                href="https://wa.me/628112656869"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-body text-sm text-champagne-gold hover:underline"

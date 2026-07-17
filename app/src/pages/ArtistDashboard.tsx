@@ -213,7 +213,7 @@ export default function ArtistDashboard() {
         <div className="p-6 border-t border-white/[0.06]">
           <p className="font-body text-xs font-semibold text-slate-gray">Need Help?</p>
           <a
-            href="https://wa.me/6281234567890"
+            href="https://wa.me/628112656869"
             target="_blank"
             rel="noopener noreferrer"
             className="font-body text-xs text-champagne-gold hover:underline mt-1 flex items-center gap-1"

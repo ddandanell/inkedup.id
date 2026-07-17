@@ -22,10 +22,10 @@ const exploreLinks = [
 ];
 
 const locationLinks = [
-  { label: 'Canggu', href: '/locations' },
-  { label: 'Seminyak', href: '/locations' },
-  { label: 'Uluwatu', href: '/locations' },
-  { label: 'Ubud', href: '/locations' },
+  { label: 'Canggu', href: '/locations/canggu' },
+  { label: 'Seminyak', href: '/locations/seminyak' },
+  { label: 'Uluwatu', href: '/locations/uluwatu' },
+  { label: 'Ubud', href: '/locations/ubud' },
 ];
 
 const handleFromUrl = (url: string) => '@' + url.replace(/\/$/, '').split('/').pop();

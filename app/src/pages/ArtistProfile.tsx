@@ -19,6 +19,7 @@ import lgThumbnail from 'lightgallery/plugins/thumbnail';
 import ArtistCard from '@/components/ArtistCard';
 import store from '@/data/store';
 import type { Artist } from '@/data/types';
+import { useSEO } from '@/hooks/useSEO';
 import 'lightgallery/css/lightgallery.css';
 import 'lightgallery/css/lg-zoom.css';
 import 'lightgallery/css/lg-thumbnail.css';
@@ -42,6 +43,23 @@ const PORTFOLIO_IMAGES = [
 ];
 
 /* Reviews shown here come from completed, verified bookings (real rating + count above). */
+
+function truncate(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const trimmed = text.slice(0, max);
+  const lastSpace = trimmed.lastIndexOf(' ');
+  return (lastSpace > 0 ? trimmed.slice(0, lastSpace) : trimmed) + '…';
+}
+
+function buildArtistDescription(artist: Artist): string {
+  if (artist.bio) {
+    return truncate(
+      `${artist.displayName} is a tattoo artist in ${artist.location}. ${artist.bio}`,
+      160
+    );
+  }
+  return `${artist.displayName} is a verified tattoo artist in ${artist.location} specializing in ${artist.styles.join(', ')}.`;
+}
 
 function MiniCalendar() {
   const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -169,6 +187,36 @@ export default function ArtistProfile() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
+  });
+
+  const artistPath = `/artists/${slug ?? ''}`;
+  const artistTitle = artist
+    ? `${artist.displayName} — Tattoo Artist in ${artist.location}`
+    : 'Artist Profile';
+  const artistDescription = artist
+    ? buildArtistDescription(artist)
+    : 'View verified tattoo artist profiles on InkedUp.';
+
+  // NOTE: keep this hook call before any early returns to satisfy React hooks rules.
+
+  useSEO({
+    title: artistTitle,
+    description: artistDescription,
+    path: artistPath,
+    canonical: artistPath,
+    image: artist?.photo,
+    jsonLd: artist
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'Person',
+          name: artist.displayName,
+          description: artist.bio || `Tattoo artist in ${artist.location}`,
+          jobTitle: 'Tattoo Artist',
+          knowsAbout: artist.styles,
+          url: artistPath,
+          image: artist.photo,
+        }
+      : undefined,
   });
 
   /* ─── Loading ─── */

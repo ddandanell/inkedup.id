@@ -9,6 +9,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.js';
 import artistsRoutes from './routes/artists.js';
 import studiosRoutes from './routes/studios.js';
+import sitemapRoutes from './routes/sitemap.js';
 import bookingsRoutes from './routes/bookings.js';
 import applicationsRoutes from './routes/applications.js';
 import reviewsRoutes from './routes/reviews.js';
@@ -57,6 +58,8 @@ app.use('/uploads', express.static(path.resolve(__dirname, '..', 'uploads')));
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+app.use('/api/sitemap.xml', sitemapRoutes);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/artists', artistsRoutes);
