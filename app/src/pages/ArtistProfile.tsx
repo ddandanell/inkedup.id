@@ -197,6 +197,8 @@ export default function ArtistProfile() {
     ? buildArtistDescription(artist)
     : 'View verified tattoo artist profiles on InkedUp.';
 
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.inkedup.id';
+
   // NOTE: keep this hook call before any early returns to satisfy React hooks rules.
 
   useSEO({
@@ -206,16 +208,27 @@ export default function ArtistProfile() {
     canonical: artistPath,
     image: artist?.photo,
     jsonLd: artist
-      ? {
-          '@context': 'https://schema.org',
-          '@type': 'Person',
-          name: artist.displayName,
-          description: artist.bio || `Tattoo artist in ${artist.location}`,
-          jobTitle: 'Tattoo Artist',
-          knowsAbout: artist.styles,
-          url: artistPath,
-          image: artist.photo,
-        }
+      ? [
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: `${origin}/` },
+              { '@type': 'ListItem', position: 2, name: 'Artists', item: `${origin}/artists` },
+              { '@type': 'ListItem', position: 3, name: artist.displayName, item: `${origin}${artistPath}` },
+            ],
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Person',
+            name: artist.displayName,
+            description: artist.bio || `Tattoo artist in ${artist.location}`,
+            jobTitle: 'Tattoo Artist',
+            knowsAbout: artist.styles,
+            url: `${origin}${artistPath}`,
+            image: artist.photo,
+          },
+        ]
       : undefined,
   });
 
@@ -352,6 +365,19 @@ export default function ArtistProfile() {
           </motion.div>
         </div>
       </section>
+
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="bg-pure-white border-b border-light-gray">
+        <div className="container-inkedup py-3">
+          <ol className="flex items-center gap-2 font-body text-[13px] text-slate-gray">
+            <li><Link to="/" className="hover:text-champagne-gold">Home</Link></li>
+            <li aria-hidden="true">/</li>
+            <li><Link to="/artists" className="hover:text-champagne-gold">Artists</Link></li>
+            <li aria-hidden="true">/</li>
+            <li className="text-midnight-navy font-medium" aria-current="page">{artist.displayName}</li>
+          </ol>
+        </div>
+      </nav>
 
       {/* ── Section 3: Bio & Details ── */}
       <section className="pt-20 md:pt-32 pb-16 md:pb-24">

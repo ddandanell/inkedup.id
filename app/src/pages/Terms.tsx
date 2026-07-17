@@ -11,7 +11,7 @@ export default function Terms() {
 
         <div className="space-y-6 font-body text-[15px] text-charcoal leading-[1.75]">
           <p>
-            By booking through {business.legalName} ("InkedUp") you agree to these terms. Please read them
+            By booking through {business.name} ("InkedUp") you agree to these terms. Please read them
             before confirming a session.
           </p>
 

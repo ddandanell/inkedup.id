@@ -11,7 +11,7 @@ export default function Privacy() {
 
         <div className="space-y-6 font-body text-[15px] text-charcoal leading-[1.75]">
           <p>
-            {business.legalName} ("InkedUp", "we", "us") respects your privacy. This page explains what
+            {business.name} ("InkedUp", "we", "us") respects your privacy. This page explains what
             information we collect when you use our website and book a mobile tattoo session, and how we use it.
           </p>
 

@@ -6,7 +6,6 @@
 
 export const business = {
   name: 'InkedUp',
-  legalName: 'InkedUp Bali', // TODO: registered entity name (e.g. "PT InkedUp Bali")
 
   // WhatsApp: digits only, with country code, no "+" or spaces (used for wa.me links).
   whatsapp: '628112656869',
@@ -19,9 +18,9 @@ export const business = {
   area: 'Canggu, Bali, Indonesia',
   areaServed: ['Canggu', 'Seminyak', 'Kuta', 'Uluwatu', 'Ubud', 'Sanur', 'Nusa Dua', 'Jimbaran'],
 
-  // Canonical social handles (keep consistent everywhere).
-  instagram: 'https://instagram.com/inkedup.bali', // TODO
-  tiktok: 'https://tiktok.com/@inkedup.bali', // TODO
+  // Social handles — only enable after the accounts are created and verified.
+  instagram: '', // TODO: replace with verified URL, e.g. 'https://instagram.com/inkedup.bali'
+  tiktok: '', // TODO: replace with verified URL, e.g. 'https://tiktok.com/@inkedup.bali'
 } as const;
 
 export type Business = typeof business;

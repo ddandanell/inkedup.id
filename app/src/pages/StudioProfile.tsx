@@ -85,6 +85,8 @@ export default function StudioProfile() {
     ? buildStudioDescription(studio)
     : 'View verified tattoo studios on InkedUp.';
 
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.inkedup.id';
+
   // NOTE: keep this hook call before any early returns to satisfy React hooks rules.
   useSEO({
     title: studioTitle,
@@ -93,18 +95,29 @@ export default function StudioProfile() {
     canonical: studioPath,
     image: studio?.logoUrl || '/tattoo-work-4.jpg',
     jsonLd: studio
-      ? {
-          '@context': 'https://schema.org',
-          '@type': 'TattooParlor',
-          name: studio.name,
-          description: studio.bio || `Tattoo studio in ${studio.location}`,
-          url: studioPath,
-          image: studio.logoUrl || '/tattoo-work-4.jpg',
-          areaServed: {
-            '@type': 'City',
-            name: studio.location,
+      ? [
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: `${origin}/` },
+              { '@type': 'ListItem', position: 2, name: 'Studios', item: `${origin}/studios` },
+              { '@type': 'ListItem', position: 3, name: studio.name, item: `${origin}${studioPath}` },
+            ],
           },
-        }
+          {
+            '@context': 'https://schema.org',
+            '@type': 'TattooParlor',
+            name: studio.name,
+            description: studio.bio || `Tattoo studio in ${studio.location}`,
+            url: `${origin}${studioPath}`,
+            image: studio.logoUrl || '/tattoo-work-4.jpg',
+            areaServed: {
+              '@type': 'City',
+              name: studio.location,
+            },
+          },
+        ]
       : undefined,
   });
 
@@ -201,6 +214,19 @@ export default function StudioProfile() {
           </motion.div>
         </div>
       </section>
+
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="bg-pure-white border-b border-light-gray">
+        <div className="container-inkedup py-3">
+          <ol className="flex items-center gap-2 font-body text-[13px] text-slate-gray">
+            <li><Link to="/" className="hover:text-champagne-gold">Home</Link></li>
+            <li aria-hidden="true">/</li>
+            <li><Link to="/studios" className="hover:text-champagne-gold">Studios</Link></li>
+            <li aria-hidden="true">/</li>
+            <li className="text-midnight-navy font-medium" aria-current="page">{studio.name}</li>
+          </ol>
+        </div>
+      </nav>
 
       {/* Artists */}
       <section className="pt-16 md:pt-24 pb-16 md:pb-24">

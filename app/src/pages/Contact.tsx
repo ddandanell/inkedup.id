@@ -134,18 +134,20 @@ export default function Contact() {
                 </p>
 
                 {/* Social links below */}
-                <div className="mt-auto pt-6 flex items-center justify-center gap-4">
-                  <span className="font-body text-xs text-slate-gray uppercase tracking-wider">Follow us</span>
-                  <a
-                    href={business.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Instagram"
-                    className="w-9 h-9 rounded-full bg-pure-white flex items-center justify-center hover:shadow-md transition-shadow"
-                  >
-                    <Instagram size={16} className="text-midnight-navy" />
-                  </a>
-                </div>
+                {business.instagram && (
+                  <div className="mt-auto pt-6 flex items-center justify-center gap-4">
+                    <span className="font-body text-xs text-slate-gray uppercase tracking-wider">Follow us</span>
+                    <a
+                      href={business.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Instagram"
+                      className="w-9 h-9 rounded-full bg-pure-white flex items-center justify-center hover:shadow-md transition-shadow"
+                    >
+                      <Instagram size={16} className="text-midnight-navy" />
+                    </a>
+                  </div>
+                )}
               </div>
             </motion.div>
 
