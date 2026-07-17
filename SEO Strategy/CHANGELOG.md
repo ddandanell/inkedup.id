@@ -124,3 +124,7 @@ None deployed yet; changes are on branch `seo/p0-p1-safe-fixes`. Deploy via merg
 - VERIFIED: `/favicon.svg` returns 200 with `Cache-Control: public, max-age=31536000, immutable`.
 - VERIFIED: production JS bundle contains the new WhatsApp number `628112656869`.
 - PENDING: GSC verification + sitemap submission; Core Web Vitals measurement; rendered schema validation; GBP creation.
+
+### Additional correction during Vercel optimization pass
+
+- **[SITE] Aligned `areaServed` with actual location pages** — updated `business.ts` and static `TattooParlor` JSON-LD in `index.html` to list all 8 service areas (added Nusa Dua, Jimbaran), matching the 8 live `/locations/:slug` pages and the dynamic sitemap.
