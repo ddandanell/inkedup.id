@@ -109,3 +109,18 @@ None deployed yet; changes are on branch `seo/p0-p1-safe-fixes`. Deploy via merg
 3. Deploy this branch and verify headers, 404s, dynamic sitemap, favicons live.
 4. Spike prerender/SSG for public routes (P1-1).
 5. Verify GSC property + submit corrected sitemap after deploy (P0-3).
+
+### Post-deploy fix
+
+- **[SITE] `vercel.json` routing/header delivery fix** — converted the standalone `headers` array into route-based headers with `"continue": true` so CSP, HSTS (`includeSubDomains; preload`), `X-Frame-Options`, and other security headers are actually emitted. Changed `/sitemap.xml` from a rewrite to a 308 redirect to `/api/sitemap.xml` so the path works despite Vercel's file-like 404 rule.
+
+### Live verification (after deploy to https://www.inkedup.id/)
+
+- VERIFIED: homepage canonical + all OG/Twitter/image URLs use `https://www.inkedup.id/`.
+- VERIFIED: response headers include `Content-Security-Policy`, `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`.
+- VERIFIED: `https://www.inkedup.id/robots.txt` points to `https://www.inkedup.id/api/sitemap.xml` and disallows `/booking`, `/artist/profile`.
+- VERIFIED: `https://www.inkedup.id/sitemap.xml` returns HTTP 308 → `/api/sitemap.xml`; sitemap contains 28 URLs on `www.inkedup.id` with `<lastmod>`.
+- VERIFIED: unknown paths (`/nonexistent-page-xyz`) and missing file-like paths (`/missing.js`) return HTTP 404 with the branded `404.html`.
+- VERIFIED: `/favicon.svg` returns 200 with `Cache-Control: public, max-age=31536000, immutable`.
+- VERIFIED: production JS bundle contains the new WhatsApp number `628112656869`.
+- PENDING: GSC verification + sitemap submission; Core Web Vitals measurement; rendered schema validation; GBP creation.
