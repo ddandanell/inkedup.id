@@ -17,7 +17,7 @@ export const business = {
 
   hours: 'Every day, 8:00 AM – 8:00 PM (WITA)', // TODO: confirm hours
   area: 'Canggu, Bali, Indonesia',
-  areaServed: ['Canggu', 'Seminyak', 'Kuta', 'Uluwatu', 'Ubud', 'Sanur'],
+  areaServed: ['Canggu', 'Seminyak', 'Kuta', 'Uluwatu', 'Ubud', 'Sanur', 'Nusa Dua', 'Jimbaran'],
 
   // Canonical social handles (keep consistent everywhere).
   instagram: 'https://instagram.com/inkedup.bali', // TODO
