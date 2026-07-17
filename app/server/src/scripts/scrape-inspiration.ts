@@ -14,6 +14,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { initSchema, query } from '../db.js';
 import { fetchAllWikimedia } from '../services/inspiration/wikimedia.js';
+import { fetchAllPexels } from '../services/inspiration/pexels.js';
 import type { InspirationImage } from '../types.js';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
@@ -190,10 +191,6 @@ async function existingSourceIds(source: string): Promise<Set<string>> {
   return new Set(rows.map((r) => r.source_id));
 }
 
-function currentSource(): string {
-  return 'wikimedia';
-}
-
 async function insertImages(images: InspirationImage[]): Promise<number> {
   let inserted = 0;
   for (const img of images) {
@@ -232,11 +229,8 @@ async function insertImages(images: InspirationImage[]): Promise<number> {
   return inserted;
 }
 
-async function approveBatch(limit: number): Promise<number> {
-  const { rowCount } = await query(
-    "UPDATE inspiration_images SET status = 'approved' WHERE status = 'pending' AND id IN (SELECT id FROM inspiration_images WHERE status = 'pending' ORDER BY created_at LIMIT $1)",
-    [limit]
-  );
+async function approvePending(): Promise<number> {
+  const { rowCount } = await query("UPDATE inspiration_images SET status = 'approved' WHERE status = 'pending'");
   return rowCount;
 }
 
@@ -252,22 +246,45 @@ async function main(): Promise<void> {
 
   await initSchema();
 
+  const existingIds = await existingSourceIds(source === 'all' ? 'wikimedia' : source);
   const allImages: InspirationImage[] = [];
+  const countNew = () => dedupeBySourceId(allImages).filter((img) => !existingIds.has(img.source_id || '')).length;
 
   if (source === 'wikimedia' || source === 'all') {
     for (const { query: q, maxPages } of SCRAPE_QUERIES) {
-      if (allImages.length >= target) break;
-      const remaining = target - allImages.length;
+      if (countNew() >= target) break;
+      const remaining = target - countNew();
       const perQueryTarget = Math.min(maxPages * 50, Math.max(30, Math.ceil(remaining / Math.min(SCRAPE_QUERIES.length, 8))));
-      console.log(`\nSearching Wikimedia Commons: "${q}" (target ~${perQueryTarget})`);
+      console.log(`\nSearching Wikimedia Commons: "${q}" (need ~${remaining} more new)`);
       try {
         const images = await fetchAllWikimedia(q, perQueryTarget, (batch, count, total) => {
           console.log(`  batch ${batch}: +${count} (total available ${total})`);
         });
         allImages.push(...images);
-        console.log(`  => collected ${images.length}, running total ${allImages.length}`);
+        console.log(`  => collected ${images.length}, running total ${allImages.length}, new unique ${countNew()}`);
       } catch (err) {
         console.error(`  Wikimedia error for "${q}":`, (err as Error).message);
+      }
+    }
+  }
+
+  if (source === 'pexels' || source === 'all') {
+    if (!process.env.PEXELS_API_KEY) {
+      console.log('\nSkipping Pexels: PEXELS_API_KEY not set.');
+    } else {
+      for (const { query: q } of SCRAPE_QUERIES.slice(0, 20)) {
+        if (countNew() >= target) break;
+        const remaining = target - countNew();
+        console.log(`\nSearching Pexels: "${q}" (need ~${remaining} more new)`);
+        try {
+          const images = await fetchAllPexels(q, Math.min(80, remaining + 20), (page, count, total) => {
+            console.log(`  page ${page}: +${count} (total available ${total})`);
+          });
+          allImages.push(...images);
+          console.log(`  => collected ${images.length}, new unique ${countNew()}`);
+        } catch (err) {
+          console.error(`  Pexels error for "${q}":`, (err as Error).message);
+        }
       }
     }
   }
@@ -288,13 +305,11 @@ async function main(): Promise<void> {
     return;
   }
 
-  // Skip already-scraped images.
-  const existingIds = await existingSourceIds(source);
   const newImages = deduped.filter((img) => !existingIds.has(img.source_id || ''));
   console.log(`Skipping ${deduped.length - newImages.length} already stored.`);
 
   const inserted = await insertImages(newImages);
-  const approved = await approveBatch(inserted);
+  const approved = await approvePending();
 
   console.log(`\nInserted ${inserted} new images.`);
   console.log(`Auto-approved ${approved} images.`);
