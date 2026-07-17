@@ -116,6 +116,28 @@ export interface DashboardStats {
   pendingStudioApplications: number;
 }
 
+export interface InspirationImage {
+  id: string;
+  source: 'wikimedia' | 'openverse' | 'flickr' | 'pexels' | 'pixabay' | 'unsplash' | 'artist_upload' | 'ai_generated';
+  sourceId?: string;
+  sourceUrl: string;
+  imageUrl: string;
+  thumbnailUrl?: string;
+  title?: string;
+  creator?: string;
+  creatorUrl?: string;
+  license: string;
+  licenseUrl?: string;
+  tags: string[];
+  styles: string[];
+  placement?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  isFeatured: boolean;
+  attributionRequired: boolean;
+  scrapedAt?: string;
+  createdAt?: string;
+}
+
 export interface AppState {
   artists: Artist[];
   studios: Studio[];

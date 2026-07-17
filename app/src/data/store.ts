@@ -1,4 +1,4 @@
-import type { Artist, Studio, Location, BookingLead, StudioApplication, AdminUser, DashboardStats } from './types';
+import type { Artist, Studio, Location, BookingLead, StudioApplication, AdminUser, DashboardStats, InspirationImage } from './types';
 import * as api from '@/services/api';
 
 function toArtist(apiArtist: api.ArtistApi): Artist {
@@ -105,6 +105,30 @@ function toApplication(apiApp: api.ApplicationApi): StudioApplication {
     submittedAt: apiApp.submitted_at,
     reviewedAt: apiApp.reviewed_at,
     reviewNotes: apiApp.review_notes,
+  };
+}
+
+function toInspirationImage(apiImg: api.InspirationImageApi): InspirationImage {
+  return {
+    id: apiImg.id,
+    source: apiImg.source,
+    sourceId: apiImg.source_id,
+    sourceUrl: apiImg.source_url,
+    imageUrl: apiImg.image_url,
+    thumbnailUrl: apiImg.thumbnail_url,
+    title: apiImg.title,
+    creator: apiImg.creator,
+    creatorUrl: apiImg.creator_url,
+    license: apiImg.license,
+    licenseUrl: apiImg.license_url,
+    tags: apiImg.tags,
+    styles: apiImg.styles,
+    placement: apiImg.placement,
+    status: apiImg.status,
+    isFeatured: Boolean(apiImg.is_featured),
+    attributionRequired: Boolean(apiImg.attribution_required),
+    scrapedAt: apiImg.scraped_at,
+    createdAt: apiImg.created_at,
   };
 }
 
@@ -353,6 +377,21 @@ const store = {
 
   async getStats(): Promise<DashboardStats> {
     return api.getPublicStats();
+  },
+
+  // Inspiration gallery
+  async getInspirationImages(params?: { style?: string; q?: string; limit?: number; offset?: number }): Promise<{ data: InspirationImage[]; total: number; limit: number; offset: number }> {
+    const result = await api.getInspirationImages(params);
+    return {
+      data: result.data.map(toInspirationImage),
+      total: result.total,
+      limit: result.limit,
+      offset: result.offset,
+    };
+  },
+
+  async getInspirationStyles(): Promise<{ style: string; count: number }[]> {
+    return api.getInspirationStyles();
   },
 };
 

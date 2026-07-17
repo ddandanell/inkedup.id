@@ -197,4 +197,30 @@ CREATE INDEX IF NOT EXISTS idx_artists_studio ON artists(studio_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
 CREATE INDEX IF NOT EXISTS idx_bookings_artist ON bookings(artist_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_artist ON reviews(artist_id);
+CREATE TABLE IF NOT EXISTS inspiration_images (
+  id TEXT PRIMARY KEY,
+  source TEXT NOT NULL CHECK(source IN ('wikimedia', 'openverse', 'flickr', 'pexels', 'pixabay', 'unsplash', 'artist_upload', 'ai_generated')),
+  source_id TEXT,
+  source_url TEXT NOT NULL,
+  image_url TEXT NOT NULL,
+  thumbnail_url TEXT,
+  title TEXT,
+  creator TEXT,
+  creator_url TEXT,
+  license TEXT NOT NULL,
+  license_url TEXT,
+  tags TEXT NOT NULL DEFAULT '[]',
+  styles TEXT NOT NULL DEFAULT '[]',
+  placement TEXT,
+  status TEXT NOT NULL CHECK(status IN ('pending', 'approved', 'rejected')) DEFAULT 'pending',
+  is_featured INTEGER NOT NULL DEFAULT 0,
+  attribution_required INTEGER NOT NULL DEFAULT 1,
+  scraped_at TEXT NOT NULL DEFAULT (datetime('now')),
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_inspiration_source_id ON inspiration_images(source, source_id);
+CREATE INDEX IF NOT EXISTS idx_inspiration_status ON inspiration_images(status);
+CREATE INDEX IF NOT EXISTS idx_inspiration_source ON inspiration_images(source);
+
 CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);

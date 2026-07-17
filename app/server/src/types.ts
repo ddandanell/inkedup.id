@@ -175,6 +175,28 @@ export interface ContentPage {
   updated_at: string;
 }
 
+export interface InspirationImage {
+  id: string;
+  source: 'wikimedia' | 'openverse' | 'flickr' | 'pexels' | 'pixabay' | 'unsplash' | 'artist_upload' | 'ai_generated';
+  source_id?: string;
+  source_url: string;
+  image_url: string;
+  thumbnail_url?: string;
+  title?: string;
+  creator?: string;
+  creator_url?: string;
+  license: string;
+  license_url?: string;
+  tags: string[];
+  styles: string[];
+  placement?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  is_featured: number;
+  attribution_required: number;
+  scraped_at?: string;
+  created_at?: string;
+}
+
 export interface DashboardStats {
   totalArtists: number;
   totalBookings: number;

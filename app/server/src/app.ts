@@ -19,6 +19,7 @@ import dashboardRoutes from './routes/dashboard.js';
 import statsRoutes from './routes/stats.js';
 import pricingRoutes from './routes/pricing.js';
 import adminPricingRoutes from './routes/adminPricing.js';
+import inspirationRoutes from './routes/inspiration.js';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
@@ -73,6 +74,7 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/pricing', pricingRoutes);
 app.use('/api/admin/pricing', adminPricingRoutes);
+app.use('/api/inspiration', inspirationRoutes);
 
 app.use(errorHandler);
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useSEO } from '@/hooks/useSEO';
 import { Link } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,30 +7,21 @@ import LightGallery from 'lightgallery/react';
 import lgZoom from 'lightgallery/plugins/zoom';
 import lgThumbnail from 'lightgallery/plugins/thumbnail';
 import store from '@/data/store';
-import type { Artist } from '@/data/types';
+import type { InspirationImage } from '@/data/types';
 import 'lightgallery/css/lightgallery.css';
 import 'lightgallery/css/lg-zoom.css';
 import 'lightgallery/css/lg-thumbnail.css';
-
-const STYLE_FILTERS = [
-  'All', 'Fine Line', 'Blackwork', 'Traditional', 'Japanese',
-  'Watercolor', 'Minimalist', 'Geometric', 'Realism', 'Floral', 'Script',
-];
-
-interface GalleryImage {
-  src: string;
-  artist: Artist;
-  style: string;
-}
 
 export default function Inspiration() {
   useSEO({
     title: 'Tattoo Inspiration',
     description:
-      'Real work from InkedUp partner-studio artists in Bali. Browse styles and placements for ideas for your next tattoo.',
+      'Curated, licensed tattoo inspiration from openly licensed image archives. Browse by style, placement, and artist.',
     path: '/inspiration',
   });
-  const [artists, setArtists] = useState<Artist[]>([]);
+  const [images, setImages] = useState<InspirationImage[]>([]);
+  const [total, setTotal] = useState(0);
+  const [styleOptions, setStyleOptions] = useState<string[]>(['All']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,10 +31,19 @@ export default function Inspiration() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    store.getActiveArtists()
-      .then((data) => {
+    Promise.all([
+      store.getInspirationImages({
+        style: activeStyle === 'All' ? undefined : activeStyle,
+        q: searchTerm.trim() || undefined,
+        limit: 120,
+      }),
+      store.getInspirationStyles(),
+    ])
+      .then(([result, styles]) => {
         if (!cancelled) {
-          setArtists(data);
+          setImages(result.data);
+          setTotal(result.total);
+          setStyleOptions(['All', ...styles.map((s) => s.style)]);
           setLoading(false);
         }
       })
@@ -54,40 +54,7 @@ export default function Inspiration() {
         }
       });
     return () => { cancelled = true; };
-  }, []);
-
-  const images = useMemo<GalleryImage[]>(() => {
-    const result: GalleryImage[] = [];
-    artists.forEach((artist) => {
-      const portfolio = artist.portfolioImages.length > 0
-        ? artist.portfolioImages
-        : ['/tattoo-work-1.jpg', '/tattoo-work-2.jpg', '/tattoo-work-3.jpg'];
-      portfolio.forEach((src) => {
-        result.push({
-          src,
-          artist,
-          style: artist.styles[0] || 'Tattoo',
-        });
-      });
-    });
-    return result;
-  }, [artists]);
-
-  const filtered = useMemo(() => {
-    let result = images;
-    if (activeStyle !== 'All') {
-      result = result.filter((img) => img.artist.styles.includes(activeStyle));
-    }
-    if (searchTerm.trim()) {
-      const q = searchTerm.toLowerCase();
-      result = result.filter(
-        (img) =>
-          img.artist.displayName.toLowerCase().includes(q) ||
-          img.artist.styles.some((s) => s.toLowerCase().includes(q))
-      );
-    }
-    return result;
-  }, [images, activeStyle, searchTerm]);
+  }, [activeStyle, searchTerm]);
 
   return (
     <div className="min-h-[100dvh]">
@@ -156,7 +123,7 @@ export default function Inspiration() {
           ) : (
             <>
               <div className="flex flex-wrap justify-center gap-2 mb-12">
-                {STYLE_FILTERS.map((style) => (
+                {styleOptions.map((style) => (
                   <button
                     key={style}
                     onClick={() => setActiveStyle(style)}
@@ -186,11 +153,13 @@ export default function Inspiration() {
                     licenseKey="0000-0000-000-0000"
                   >
                     <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-                      {filtered.map((img, i) => (
+                      {images.map((img, i) => (
                         <motion.a
-                          key={`${img.artist.id}-${i}`}
-                          href={img.src}
-                          data-src={img.src}
+                          key={`${img.id}-${i}`}
+                          href={img.imageUrl}
+                          data-src={img.imageUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="inspiration-item group relative block overflow-hidden rounded-lg cursor-pointer break-inside-avoid"
                           initial={{ opacity: 0, y: 20 }}
                           whileInView={{ opacity: 1, y: 0 }}
@@ -202,18 +171,28 @@ export default function Inspiration() {
                           }}
                         >
                           <img
-                            src={img.src}
-                            alt={`${img.artist.displayName} tattoo work`}
+                            src={img.thumbnailUrl || img.imageUrl}
+                            alt={img.title || `${img.styles[0] || 'Tattoo'} inspiration`}
                             className="w-full object-cover transition-transform duration-400 ease-out group-hover:scale-105"
                             loading="lazy"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-midnight-navy/80 via-midnight-navy/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
+                          <div className="absolute inset-0 bg-gradient-to-t from-midnight-navy/90 via-midnight-navy/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
                             <p className="font-body text-sm font-semibold text-pure-white">
-                              {img.artist.displayName}
+                              {img.title || `${img.styles[0] || 'Tattoo'} inspiration`}
                             </p>
                             <p className="font-body text-xs text-champagne-gold">
-                              {img.artist.styles.slice(0, 3).join(', ')}
+                              {img.styles.slice(0, 3).join(', ')}
                             </p>
+                            {img.creator && (
+                              <p className="font-body text-[11px] text-white/70 mt-1">
+                                by {img.creator}
+                              </p>
+                            )}
+                            {img.license && (
+                              <p className="font-body text-[10px] text-white/50 mt-0.5 uppercase tracking-wider">
+                                {img.license}
+                              </p>
+                            )}
                           </div>
                         </motion.a>
                       ))}
@@ -222,7 +201,11 @@ export default function Inspiration() {
                 </motion.div>
               </AnimatePresence>
 
-              {filtered.length === 0 && (
+              <p className="text-center font-body text-sm text-slate-gray mb-8">
+                Showing {images.length} of {total} images
+              </p>
+
+              {images.length === 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}

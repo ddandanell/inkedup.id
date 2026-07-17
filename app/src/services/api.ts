@@ -100,6 +100,13 @@ export const getDashboard = () =>
 // Public stats for marketing trust bars (no auth)
 export const getPublicStats = () => api.get<DashboardStatsApi>('/stats');
 
+// Inspiration gallery (CC-licensed / public-domain images)
+export const getInspirationImages = (params?: { style?: string; q?: string; limit?: number; offset?: number }) =>
+  api.get<{ data: InspirationImageApi[]; total: number; limit: number; offset: number }>(
+    '/inspiration' + (params ? `?${new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)])).toString()}` : '')
+  );
+export const getInspirationStyles = () => api.get<{ style: string; count: number }[]>('/inspiration/styles');
+
 // Types mirrored from backend (snake_case)
 export interface ArtistApi {
   id: string;
@@ -244,4 +251,26 @@ export interface DashboardStatsApi {
   completedBookings: number;
   totalCommissions: number;
   pendingStudioApplications: number;
+}
+
+export interface InspirationImageApi {
+  id: string;
+  source: 'wikimedia' | 'openverse' | 'flickr' | 'pexels' | 'pixabay' | 'unsplash' | 'artist_upload' | 'ai_generated';
+  source_id?: string;
+  source_url: string;
+  image_url: string;
+  thumbnail_url?: string;
+  title?: string;
+  creator?: string;
+  creator_url?: string;
+  license: string;
+  license_url?: string;
+  tags: string[];
+  styles: string[];
+  placement?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  is_featured: number;
+  attribution_required: number;
+  scraped_at?: string;
+  created_at?: string;
 }
