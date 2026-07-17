@@ -31,10 +31,10 @@
       },
       "continue": true
     },
-    { "src": "/sitemap\\.xml", "dest": "/api/sitemap.xml" },
+    { "src": "/sitemap\\.xml", "status": 308, "headers": { "Location": "https://www.inkedup.id/api/sitemap.xml" } },
     { "src": "/api/(.*)", "dest": "/api" },
     { "handle": "filesystem" },
-    { "src": "/(?!sitemap\\.xml$)(.*\\..*)", "status": 404, "dest": "/404.html" },
+    { "src": "/(.*)\\..*", "status": 404, "dest": "/404.html" },
     { "src": "/", "dest": "/index.html" },
     { "src": "/artists", "dest": "/index.html" },
     { "src": "/artists/([^/]+)", "dest": "/index.html" },
