@@ -31,33 +31,35 @@ A structured, legally safe system for building a 1,000+ image tattoo inspiration
    - Committed to `main` and pushed to GitHub.
    - Vercel production deployment ready.
 
-## 🔄 In Progress
+## ✅ Scrape Result
 
-- **First large scrape**: 1,000+ images from Wikimedia Commons (running in background).
-  - Current observed collection rate: ~800+ unique images across 30 queries.
-  - Re-run with additional queries if the first pass falls short of 1,000.
+- **Wikimedia Commons first large scrape**: **1,142 approved images** across 14 inferred styles.
+  - Source: `wikimedia` only.
+  - All images use commercial-friendly licenses (CC0, PDM, CC BY, CC BY-SA).
+  - Live gallery: `https://www.inkedup.id/inspiration`
 
 ## 📋 Remaining / Next Steps
 
-1. **Verify scrape result**
-   - Count rows in `inspiration_images`.
-   - Check `status='approved'` count.
-   - Inspect sample images for quality and correct attribution.
+1. **Quality & moderation**
+   - Add admin review UI for `pending` images.
+   - Allow flagging / removing images on artist request.
+   - Filter out non-tattoo results (some Wikimedia results are signs/flash only).
 
-2. **Reach 1,000+ if needed**
-   - Add more Wikimedia queries (body parts, national styles, artist names).
-   - Or enable fallback adapters:
-     - **Flickr API** — needs API key; search CC-licensed photos.
-     - **Pexels API** — needs API key; tattoo/lifestyle photos.
-     - **Pixabay API** — needs API key; illustration/photo mix.
-     - **Unsplash API** — needs API key; high-quality lifestyle shots.
-   - Add API keys to `.env`:
+2. **Image hosting / performance**
+   - Currently hotlinks to Wikimedia image URLs.
+   - For production scale, mirror images to Vercel Blob / S3 / Cloudflare R2.
+   - Add WebP conversion + responsive sizes.
+
+3. **Additional sources (optional)**
+   - Pexels adapter is already built (`app/server/src/services/inspiration/pexels.ts`).
+   - To enable, add `PEXELS_API_KEY` to `.env` and run:
+     ```bash
+     npx tsx server/src/scripts/scrape-inspiration.ts --target=500 --source=all
      ```
-     FLICKR_API_KEY=...
-     PEXELS_API_KEY=...
-     PIXABAY_API_KEY=...
-     UNSPLASH_ACCESS_KEY=...
-     ```
+   - Other options if you want more volume:
+     - **Flickr API** — `FLICKR_API_KEY=...`
+     - **Pixabay API** — `PIXABAY_API_KEY=...`
+     - **Unsplash API** — `UNSPLASH_ACCESS_KEY=...`
 
 3. **Image hosting / performance**
    - Currently hotlinks to Wikimedia image URLs.
